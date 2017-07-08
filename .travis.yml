@@ -1,7 +1,14 @@
 language: cpp
+python: 3.6
 compiler:
   - clang
   - gcc
-
 script:
   - ./configure --test && make && make test
+before_deploy:
+  - python3 -m pip install packagecore 
+  - packagecore "${TRAVIS_TAG#v}"
+deploy:
+  skip_cleanup: true
+  on:
+    tags: true
