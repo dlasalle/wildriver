@@ -5,7 +5,7 @@ metadata:
   summary: IO library for sparse matrices and graphs.
   homepage: https://github.com/dlasalle/wildriver
 commands:
-	compile:
+  compile:
     - ./configure --prefix=/usr
     - make
   install:
