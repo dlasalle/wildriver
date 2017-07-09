@@ -18,8 +18,12 @@ packages:
   fedora25:
     builddeps:
       - cmake 
-      - gcc
+      - gcc-c++
+  centos7.3:
+    builddeps:
+      - cmake 
+      - gcc-c++
   ubuntu17.10:
     builddeps:
       - cmake 
-      - gcc
+      - g++
