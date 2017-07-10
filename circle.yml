@@ -1,3 +1,6 @@
+machine:
+  services:
+    - docker
 dependencies:
   pre:
     - ./configure --test && make
