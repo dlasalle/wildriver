@@ -1,5 +1,11 @@
+WildRiver
+=========
+
+Library for reading and writing sparse matrices and graphs.
+
+
 Packages
-########
+--------
 
 <a href="https://bytepackager.com">
   <img src="https://bytepackager.com/badge/Q3ceQ_fyWbdyO77sSwWwqImw0wE/status.svg"/>
@@ -19,7 +25,7 @@ Packages
 
 
 Unit Testing
-############
+------------
 
 <a href="https://travis-ci.org/dlasalle/wildriver">
   <img src="https://travis-ci.org/dlasalle/wildriver.svg?branch=master"/>

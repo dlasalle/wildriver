@@ -1,0 +1,15 @@
+version: 2
+jobs:
+  build:
+    steps:
+      - ./configure --test
+      - make
+      - make test
+deployment:
+  package:
+    tag: /^v.*$/
+    commands:
+      - pip3 install packagecore
+      - packagecore -o dist/ "${CIRCLE_TAG}"
+    artifacts:
+      - "dist"
