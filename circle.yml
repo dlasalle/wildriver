@@ -1,15 +1,13 @@
-version: 2
-jobs:
-  build:
-    steps:
-      - ./configure --test
-      - make
-      - make test
+dependencies:
+  pre:
+    - ./configure --test && make
+test:
+  override:
+    - make test
 deployment:
   package:
     tag: /^v.*$/
     commands:
+      - pyenv install 3.6.0
       - pip3 install packagecore
-      - packagecore -o dist/ "${CIRCLE_TAG}"
-    artifacts:
-      - "dist"
+      - packagecore -o "${CIRCLE_ARTIFACTS}" "${CIRCLE_TAG}"
