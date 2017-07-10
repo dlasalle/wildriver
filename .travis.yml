@@ -1,7 +1,17 @@
+sudo: required
+dist: trusty
 language: cpp
 compiler:
   - clang
   - gcc
-
 script:
   - ./configure --test && make && make test
+before_deploy:
+  - sudo apt-get update -qy
+  - sudo apt-get install -qy python3 python3-pip
+  - python3 -m pip install packagecore 
+  - packagecore "${TRAVIS_TAG#v}"
+deploy:
+  skip_cleanup: true
+  on:
+    tags: true
