@@ -8,6 +8,6 @@ deployment:
   package:
     tag: /^v.*$/
     commands:
-      - pyenv install 3.6.0
+      - sudo apt-get install python3-pip 
       - pip3 install packagecore
       - packagecore -o "${CIRCLE_ARTIFACTS}" "${CIRCLE_TAG}"
