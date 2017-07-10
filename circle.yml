@@ -9,5 +9,5 @@ deployment:
     tag: /^v.*$/
     commands:
       - sudo apt-get install python3-pip 
-      - pip3 install packagecore
+      - python3 -m pip install packagecore
       - packagecore -o "${CIRCLE_ARTIFACTS}" "${CIRCLE_TAG}"
