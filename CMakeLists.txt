@@ -11,10 +11,10 @@ else()
   message("Building an optimized release")
 endif()
 
-if (SHARED)
-  set(WILDRIVER_LIBRARY_TYPE SHARED)
-else()
+if (STATIC)
   set(WILDRIVER_LIBRARY_TYPE STATIC)
+else()
+  set(WILDRIVER_LIBRARY_TYPE SHARED)
 endif()
 
 if (DEFINED DEVEL AND NOT DEVEL EQUAL 0)
