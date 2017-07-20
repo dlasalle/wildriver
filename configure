@@ -37,10 +37,21 @@ show_help() {
   echo "    Build with assertions on."
   echo "  --prefix=<prefix>"
   echo "    Set the install prefix."
-  echo "  --shared"
-  echo "    Generate a shared version of lib${NAME} instead of a static one."
-  echo "  --cxx=<cxx>"
+  echo "  --static"
+  echo "    Generate a staic version of lib${NAME} instead of a shared one."
+  echo "  --cc=<c compiler>"
+  echo "    Set the C compiler to use."
+  echo "  --cxx=<c++ compiler>"
   echo "    Set the C++ compiler to use."
+  echo "  --dimension-type={int32_t|int64_t|uint32_t|uint64_t}"
+  echo "    Set the type to use for matrix dimensions (rows/columns) and "
+  echo "    graph vertex numbers (default int64_t)."
+  echo "  --index-type={int32_t|int64_t|uint32_t|uint64_t}"
+  echo "    Set the type to use for matrix non-zero indexes and graph edge "
+  echo "    indexes (default int64_t)."
+  echo "  --value-type={int32_t|int64_t|uint32_t|uint64_t|float|double}"
+  echo "    Set the type to use for matrix values and graph weights "
+  echo "    (default double)."
   echo "  --devel"
   echo "    Turn on compiler warnings."
   echo "  --test"
@@ -82,9 +93,9 @@ for i in "${@}"; do
     --prefix=*)
     CONFIG_FLAGS="${CONFIG_FLAGS} -DCMAKE_INSTALL_PREFIX=${i#*=}"
     ;;
-    # shared
-    --shared)
-    CONFIG_FLAGS="${CONFIG_FLAGS} -DSHARED=1"
+    # static 
+    --static)
+    CONFIG_FLAGS="${CONFIG_FLAGS} -DSTATIC=1"
     ;;
     # devel
     --devel)
@@ -95,8 +106,20 @@ for i in "${@}"; do
     CONFIG_FLAGS="${CONFIG_FLAGS} -DCMAKE_C_COMPILER=${i#*=}"
     ;;
     # cxx
-    --cxx*)
+    --cxx=*)
     CONFIG_FLAGS="${CONFIG_FLAGS} -DCMAKE_CXX_COMPILER=${i#*=}"
+    ;;
+    # dimension type
+    --dimension-type=*)
+    CONFIG_FLAGS="${CONFIG_FLAGS} -DWILDRIVER_DIMENSION_TYPE=${i#*=}"
+    ;;
+    # index type
+    --index-type=*)
+    CONFIG_FLAGS="${CONFIG_FLAGS} -DWILDRIVER_INDEX_TYPE=${i#*=}"
+    ;;
+    # value type
+    --value-type=*)
+    CONFIG_FLAGS="${CONFIG_FLAGS} -DWILDRIVER_VALUE_TYPE=${i#*=}"
     ;;
     # testing
     --test)

@@ -1,6 +1,6 @@
 name: wildriver 
 metadata:
-  maintainer: dominique@bytepackager.com
+  maintainer: dominique@solidlake.com
   license: MIT 
   summary: IO library for sparse matrices and graphs.
   homepage: https://github.com/dlasalle/wildriver

@@ -38,19 +38,19 @@
 
 
 #ifndef WILDRIVER_DIMENSION_TYPE
-#define WILDRIVER_DIMENSION_TYPE uint32_t
+#define WILDRIVER_DIMENSION_TYPE int64_t
 #endif
 typedef WILDRIVER_DIMENSION_TYPE wildriver_dim_t;
 
 
 #ifndef WILDRIVER_INDEX_TYPE
-#define WILDRIVER_INDEX_TYPE uint32_t
+#define WILDRIVER_INDEX_TYPE int64_t
 #endif
 typedef WILDRIVER_INDEX_TYPE wildriver_ind_t;
 
 
 #ifndef WILDRIVER_VALUE_TYPE
-#define WILDRIVER_VALUE_TYPE float
+#define WILDRIVER_VALUE_TYPE double 
 #endif
 typedef WILDRIVER_VALUE_TYPE wildriver_val_t;
 
