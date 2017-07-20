@@ -1,5 +1,4 @@
-WildRiver
-=========
+![WildRiver](doc/logo.svg.png)
 
 <a href="https://travis-ci.org/dlasalle/wildriver">
   <img src="https://travis-ci.org/dlasalle/wildriver.svg?branch=master"/>
