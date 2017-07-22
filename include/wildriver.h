@@ -37,16 +37,16 @@
 ******************************************************************************/
 
 
-#ifndef WILDRIVER_DIMENSION_TYPE
-#define WILDRIVER_DIMENSION_TYPE int64_t
-#endif
-typedef WILDRIVER_DIMENSION_TYPE wildriver_dim_t;
-
-
 #ifndef WILDRIVER_INDEX_TYPE
-#define WILDRIVER_INDEX_TYPE int64_t
+#define WILDRIVER_INDEX_TYPE size_t 
 #endif
 typedef WILDRIVER_INDEX_TYPE wildriver_ind_t;
+
+
+#ifndef WILDRIVER_DIMENSION_TYPE
+#define WILDRIVER_DIMENSION_TYPE uint32_t 
+#endif
+typedef WILDRIVER_DIMENSION_TYPE wildriver_dim_t;
 
 
 #ifndef WILDRIVER_VALUE_TYPE
