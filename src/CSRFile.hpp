@@ -63,6 +63,47 @@ class CSRFile :
 
 
     /**
+     * @brief Get the sparse matrix in CSR form. The pointers must be
+     * pre-allocated to the sizes required by the info of the matrix 
+     *
+     * |rowptr| = nrows + 1
+     * |rowind| = nnz
+     * |rowval| = nnz
+     *
+     * @param rowptr The row pointer indicating the start of each row.
+     * @param rowind The row column indexs (i.e., for each element in a row,
+     * the column index corresponding to that element).
+     * @param rowval The row values.
+     * @param progress The variable to update as the matrix is loaded (may be
+     * null).
+     */
+    virtual void read(
+        ind_t * rowptr,
+        dim_t * rowind,
+        val_t * rowval,
+        double * progress) override;
+
+
+    /**
+     * @brief Write the given CSR structure to teh file. The information for
+     * the matrix must already be set.
+     *
+     * @param rowptr The row pointer indicating the start of each row.
+     * @param rowind The row column indexs (i.e., for each element in a row,
+     * the column index corresponding to that element).
+     * @param rowval The row values.
+     */
+    virtual void write(
+        ind_t const * rowptr,
+        dim_t const * rowind,
+        val_t const * rowval) override;
+
+
+  private:
+    std::string m_line;
+
+
+    /**
      * @brief Reset the current position in the matrix file to the first row.
      */
     virtual void firstRow() override;
@@ -95,18 +136,6 @@ class CSRFile :
 
 
     /**
-     * @brief Get the name of this matrix file type.
-     *
-     * @return The matrix file type name.
-     */
-    virtual std::string const & getName() const noexcept override
-    {
-      return NAME;
-    } 
-
-
-  protected:
-    /**
      * @brief Read the header of this matrix file. Populates internal fields
      * with the header information.
      */
@@ -131,8 +160,7 @@ class CSRFile :
         std::string const & line) const noexcept override;
 
 
-  private:
-    std::string m_line;
+
 
 
 
