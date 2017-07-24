@@ -71,29 +71,6 @@ class IMatrixWriter
         val_t const * rowval) = 0;
 
 
-    /**
-     * @brief Reset the current position in the matrix file to the first row.
-     */
-    virtual void firstRow() = 0;
-
-
-    /**
-     * @brief Set the next row in the matrix file.
-     *
-     * @param next The row to set.
-     */
-    virtual void setNextRow(
-        std::vector<matrix_entry_struct> const & next) = 0;
-
-
-    /**
-     * @brief Get the name of this matrix file type.
-     *
-     * @return The matrix file type name.
-     */
-    virtual std::string const & getName() const noexcept = 0;
-
-
 };
 
 

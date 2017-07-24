@@ -25,7 +25,8 @@ namespace WildRiver {
 
 
 class CSRFile : 
-  public MatrixTextFile
+  public IMatrixReader,
+  public IMatrixWriter
 {
   public:
     /**

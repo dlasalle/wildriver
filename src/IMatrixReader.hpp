@@ -76,37 +76,6 @@ class IMatrixReader
         ind_t & nnz) = 0;
 
 
-    /**
-     * @brief Reset the current position in the matrix file to the first row.
-     */
-    virtual void firstRow() = 0;
-
-
-    /**
-     * @brief Get the next row in the matrix (adjacecny list in the graph).
-     *
-     * @param numNonZeros The number of non-zeros in the row (output).
-     * @param columns The column of each non-zero entry (must be of length at
-     * least the number of non-zero entries).
-     * @param values The value of each non-zero entry (must be null or of 
-     * length at least the number of non-zero entries).
-     *
-     * @return True if another row was found in the file.
-     */
-    virtual bool getNextRow(
-        dim_t * numNonZeros,
-        dim_t * columns,
-        val_t * values) = 0;
-
-
-    /**
-     * @brief Get the name of this matrix file type.
-     *
-     * @return The matrix file type name.
-     */
-    virtual std::string const & getName() const noexcept = 0;
-
-
 };
 
 
