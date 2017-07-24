@@ -16,7 +16,9 @@
 
 
 
-#include "MatrixTextFile.hpp"
+#include "IMatrixReader.hpp"
+#include "IMatrixWriter.hpp"
+#include "TextFile.hpp"
 
 
 
@@ -100,13 +102,57 @@ class CSRFile :
 
 
   private:
+    /**
+     * @brief The number of rows in the matrix.
+     */
+    dim_t m_numRows;
+
+
+    /**
+     * @brief The number of columns in the matrix.
+     */
+    dim_t m_numCols;
+
+
+    /**
+     * @brief The number of non-zeros in the matrix.
+     */
+    ind_t m_nnz;
+
+
+    /**
+    * @brief The current row being processed.
+    */
+    dim_t m_currentRow;
+
+
+    /**
+     * @brief A buffer for reading each line.
+     */
     std::string m_line;
+
+
+    /**
+     * @brief The underlying text file.
+     */
+    TextFile m_file;
+
+
+    /**
+    * @brief Get the next non-comment line from the file.
+    *
+    * @param line The line buffer.
+    *
+    * @return True if a line filled the buffer.
+    */
+    bool nextNoncommentLine(
+        std::string & line);
 
 
     /**
      * @brief Reset the current position in the matrix file to the first row.
      */
-    virtual void firstRow() override;
+    void firstRow();
 
 
     /**
@@ -120,10 +166,10 @@ class CSRFile :
      *
      * @return True if another row was found in the file.
      */
-    virtual bool getNextRow(
+    bool getNextRow(
         dim_t * numNonZeros,
         dim_t * columns,
-        val_t * values) override;
+        val_t * values);
 
 
     /**
@@ -131,22 +177,22 @@ class CSRFile :
      *
      * @param next The row to set.
      */
-    virtual void setNextRow(
-        std::vector<matrix_entry_struct> const & next) override;
+    void setNextRow(
+        std::vector<matrix_entry_struct> const & next);
 
 
     /**
      * @brief Read the header of this matrix file. Populates internal fields
      * with the header information.
      */
-    virtual void readHeader() override;
+    void readHeader();
 
 
     /**
      * @brief Write the header of this matrix file. The header consists of
      * internal fields set by "setInfo()".
      */
-    virtual void writeHeader() override; 
+    void writeHeader(); 
 
 
     /**
@@ -156,8 +202,8 @@ class CSRFile :
      *
      * @return True if the line is a comment.
      */
-    virtual bool isComment(
-        std::string const & line) const noexcept override;
+    bool isComment(
+        std::string const & line) const noexcept;
 
 
 

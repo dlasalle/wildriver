@@ -10,6 +10,7 @@
 
 
 
+#include <sstream>
 #include <cstddef>
 #include "CSRFile.hpp"
 
@@ -41,7 +42,7 @@ std::string const CSRFile::NAME = "CSR";
 
 
 /******************************************************************************
-* PROTECTED FUNCTIONS *********************************************************
+* PUBLIC STATIC FUNCTIONS *****************************************************
 ******************************************************************************/
 
 
@@ -55,6 +56,25 @@ bool CSRFile::hasExtension(
   return TextFile::matchExtension(f,extensions);
 }
 
+
+
+
+/******************************************************************************
+* PRIVATE FUNCTIONS ***********************************************************
+******************************************************************************/
+
+
+bool CSRFile::nextNoncommentLine(
+    std::string & line)
+{
+  do {
+    if (!m_file.nextLine(line)) {
+      return false;
+    }
+  } while (isComment(line));
+
+  return true;
+}
 
 
 bool CSRFile::isComment(
@@ -75,14 +95,14 @@ bool CSRFile::isComment(
 void CSRFile::readHeader()
 {
   // open our file for reading
-  openRead();
+  m_file.openRead();
 
   // go to the start of the file
   firstRow();
 
-  dim_t nrows = 0;
-  dim_t ncols = 0;
-  ind_t nnz = 0;
+  m_numRows = 0;
+  m_numRows = 0;
+  m_nnz = 0;
 
   while (nextNoncommentLine(m_line)) {
     char const * const lineEnd = m_line.data() + m_line.length();
@@ -100,8 +120,8 @@ void CSRFile::readHeader()
         break;
       }
 
-      if (col > ncols) {
-        ncols = col;
+      if (col > m_numCols) {
+        m_numCols = col;
       }
 
       // skip value without converting
@@ -111,13 +131,9 @@ void CSRFile::readHeader()
       ++degree;
     }
 
-    nnz += degree;
-    ++nrows;
+    m_nnz += degree;
+    ++m_numRows;
   }
-
-  setNumRows(nrows);
-  setNumCols(ncols);
-  setNNZ(nnz);
 
   // go back to the start
   firstRow();
@@ -127,7 +143,7 @@ void CSRFile::readHeader()
 void CSRFile::writeHeader()
 {
   // open for writing
-  openWrite();
+  m_file.openWrite();
 }
 
 
@@ -140,8 +156,12 @@ void CSRFile::writeHeader()
 
 CSRFile::CSRFile(
     std::string const & fname) :
-  MatrixTextFile(fname),
-  m_line(BUFFER_SIZE,'\0')
+  m_numRows(NULL_DIM),
+  m_numCols(NULL_DIM),
+  m_nnz(NULL_IND),
+  m_currentRow(0),
+  m_line(BUFFER_SIZE,'\0'),
+  m_file(fname)
 {
   // do nothing
 }
@@ -168,15 +188,13 @@ void CSRFile::read(
 {
   std::vector<matrix_entry_struct> row;
 
-  dim_t nrows = getNumRows();
-
-  dim_t const interval = nrows > 100 ? nrows / 100 : 1;
+  dim_t const interval = m_numRows > 100 ? m_numRows / 100 : 1;
   double const increment = 1.0/100.0;
 
   // read in the rows the matrix into our csr
   dim_t j = 0;
   rowptr[0] = j;
-  for (dim_t i=0; i<nrows; ++i) {
+  for (dim_t i = 0; i < m_numRows; ++i) {
     dim_t degree;
 
     dim_t * const rowindStart = rowind+rowptr[i];
@@ -185,7 +203,7 @@ void CSRFile::read(
     if (!getNextRow(&degree,rowindStart,rowvalStart)) {
       // fewer rows than expected
       throw EOFException(std::string("Failed to read row ") + \
-          std::to_string(i) + std::string("/") + std::to_string(nrows)); 
+          std::to_string(i) + std::string("/") + std::to_string(m_numRows)); 
     }
 
     rowptr[i+1] = rowptr[i]+degree;
@@ -195,10 +213,10 @@ void CSRFile::read(
     }
   }
 
-  if (rowptr[nrows] != getNNZ()) {
+  if (rowptr[m_numRows] != m_nnz) {
     // we read in the wrong number of non-zeroes
     throw EOFException(std::string("Only found ") + std::to_string(j) + \
-        std::string("/") + std::to_string(getNNZ()) + \
+        std::string("/") + std::to_string(m_nnz) + \
         std::string(" non-zeroes in file"));
   }
 }
@@ -211,9 +229,8 @@ void CSRFile::write(
 {
   std::vector<matrix_entry_struct> row;
 
-  dim_t const nrows = getNumRows();
 
-  for (dim_t i=0;i<nrows;++i) {
+  for (dim_t i = 0; i < m_numRows; ++i) {
     // build and insert a new row
     row.clear();
     for (ind_t j=rowptr[i];j<rowptr[i+1];++j) {
@@ -242,8 +259,8 @@ void CSRFile::write(
 void CSRFile::firstRow()
 {
   // go to the start of the file
-  resetStream();
-  setCurrentRow(0);
+  m_file.resetStream();
+  m_currentRow = 0; 
 }
 
 
@@ -278,7 +295,7 @@ bool CSRFile::getNextRow(
     val = std::strtod(sptr,&eptr);
     if (eptr == sptr) {
       throw BadFileException(std::string("Failed to read column on "
-            "line ") + std::to_string(getCurrentLine()));
+            "line ") + std::to_string(m_file.getCurrentLine()));
     }
 
     columns[degree] = col;
@@ -288,7 +305,7 @@ bool CSRFile::getNextRow(
     ++degree;
   }
 
-  incRow();
+  ++m_currentRow;
 
   *numNonZeros = degree;
 
@@ -300,17 +317,19 @@ void CSRFile::setNextRow(
     std::vector<matrix_entry_struct> const & next)
 {
   size_t const size = next.size();
+  std::stringstream streamBuffer;
   if (size > 0) {
     for (size_t i=0; i<size-1; ++i) {
       matrix_entry_struct const & e = next[i];
-      getStream() << (e.ind+1) << " " << e.val << " ";
+      streamBuffer << (e.ind+1) << " " << e.val << " ";
     }
     matrix_entry_struct const & e = next.back();
-    getStream() << (e.ind+1) << " " << e.val;
+    streamBuffer << (e.ind+1) << " " << e.val;
   }
-  getStream() << std::endl;
 
-  incRow();
+  m_file.setNextLine(streamBuffer.str());
+
+  ++m_currentRow;
 }
 
 

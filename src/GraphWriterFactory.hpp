@@ -1,6 +1,6 @@
 /**
- * @file GraphFactory.hpp
- * @brief Class for instantiating graph files.
+ * @file GraphWriterFactory.hpp
+ * @brief Class for instantiating graph writers.
  * @author Dominique LaSalle <wildriver@domnet.org>
  * Copyright 2015-2016
  * @version 1
@@ -10,14 +10,14 @@
 
 
 
-#ifndef WILDRIVER_GRAPHFACTORY_HPP
-#define WILDRIVER_GRAPHFACTORY_HPP
+#ifndef WILDRIVER_GRAPHWRITERFACTORY_HPP
+#define WILDRIVER_GRAPHWRITERFACTORY_HPP
 
 
 
 #include <memory>
 
-#include "IGraphFile.hpp"
+#include "IGraphWriter.hpp"
 
 
 
@@ -25,7 +25,7 @@ namespace WildRiver
 {
 
 
-class GraphFactory
+class GraphWriterFactory
 {
   public:
     /**
@@ -39,7 +39,7 @@ class GraphFactory
      * @throw UnknownExtensionException If no class reading the specified file
      * type can be found.
      */
-    static std::unique_ptr<IGraphFile> make(
+    static std::unique_ptr<IGraphWriter> make(
         std::string const & name);
 
 
