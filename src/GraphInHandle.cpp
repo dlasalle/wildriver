@@ -11,7 +11,7 @@
 
 
 #include "GraphInHandle.hpp"
-#include "GraphFactory.hpp"
+#include "GraphReaderFactory.hpp"
 
 
 
@@ -27,7 +27,7 @@ namespace WildRiver
 
 GraphInHandle::GraphInHandle(
     std::string const & name) :
-  m_reader(GraphFactory::make(name))
+  m_reader(GraphReaderFactory::make(name))
 {
   // do nothing
 }

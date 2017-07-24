@@ -17,7 +17,7 @@
 
 #include <memory>
 
-#include "IGraphReaderFile.hpp"
+#include "IGraphReader.hpp"
 
 
 

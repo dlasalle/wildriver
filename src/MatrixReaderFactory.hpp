@@ -1,5 +1,5 @@
 /**
- * @file MatrixFactory.hpp
+ * @file MatrixReaderFactory.hpp
  * @brief Class for instantiating matrix files.
  * @author Dominique LaSalle <wildriver@domnet.org>
  * Copyright 2015-2016
@@ -10,15 +10,15 @@
 
 
 
-#ifndef WILDRIVER_MATRIXFACTORY_HPP
-#define WILDRIVER_MATRIXFACTORY_HPP
+#ifndef WILDRIVER_MATRIXREADERFACTORY_HPP
+#define WILDRIVER_MATRIXREADERFACTORY_HPP
 
 
 
 
 #include <memory>
 #include <string>
-#include "IMatrixFile.hpp"
+#include "IMatrixReader.hpp"
 
 
 
@@ -26,7 +26,7 @@ namespace WildRiver
 {
 
 
-class MatrixFactory
+class MatrixReaderFactory
 {
   public:
     /**
@@ -39,7 +39,7 @@ class MatrixFactory
      * @throw UnknownExtensionException If no class reading the specified file
      * type can be found.
      */
-    static std::unique_ptr<IMatrixFile> make(
+    static std::unique_ptr<IMatrixReader> make(
         std::string const & name);
 };
 

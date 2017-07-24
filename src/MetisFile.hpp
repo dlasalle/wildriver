@@ -18,6 +18,7 @@
 
 #include "IGraphReader.hpp"
 #include "IGraphWriter.hpp"
+#include "TextFile.hpp"
 
 
 

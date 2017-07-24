@@ -11,7 +11,7 @@
 
 
 #include "GraphOutHandle.hpp"
-#include "GraphFactory.hpp"
+#include "GraphWriterFactory.hpp"
 
 
 
@@ -28,7 +28,7 @@ namespace WildRiver
 
 GraphOutHandle::GraphOutHandle(
     std::string const & name) :
-  m_writer(GraphFactory::make(name))
+  m_writer(GraphWriterFactory::make(name))
 {
   // do nothing
 }
@@ -64,14 +64,6 @@ void GraphOutHandle::setInfo(
     bool const ewgts)
 {
   m_writer->setInfo(nvtxs,nedges,nvwgt,ewgts);
-}
-
-
-void GraphOutHandle::setNextVertex(
-    std::vector<val_t> const & vwgts,
-    std::vector<matrix_entry_struct> const & list)
-{
-  m_writer->setNextVertex(vwgts,list);
 }
 
 
