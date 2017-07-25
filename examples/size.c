@@ -1,5 +1,20 @@
-#include <wildriver.h>
+/**
+ * @file size.c
+ * @brief Example of using WildRiver to open and read a matrix.
+ * @author Dominique LaSalle <dominique@solidlake.com>
+ * Copyright 2017
+ * @version 1
+ * @date 2017-07-25
+ */
+
+
+
+
 #include <stdio.h>
+#include "wildriver.h"
+
+
+
 
 int main(
   int argc,
@@ -10,12 +25,20 @@ int main(
   char * filename;
   size_t * rowptr;
   uint32_t * ind;
-  float * val; 
+  double * val; 
+
+  rc = 0;
+  handle = NULL;
+
+  if (argc != 2) {
+    printf("Must supply a single matrix/graph file to read.\n");
+    rc = 1;
+    goto CLEANUP;
+  }
 
   filename = argv[1];
 
-  rc = 0;
-  if ((handle = wildirver_open_matrix(filename, WILDRIVER_IN)) == NULL) {
+  if ((handle = wildriver_open_matrix(filename, WILDRIVER_IN)) == NULL) {
     printf("Failed to open '%s'.", filename);
     rc = 1;
     goto CLEANUP;

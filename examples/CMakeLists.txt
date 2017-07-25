@@ -3,4 +3,4 @@ function(example example_file)
   target_link_libraries(${example_file} wildriver)
 endfunction()
 
-
+example(size)
