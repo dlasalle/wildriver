@@ -46,29 +46,6 @@ class VectorFile :
     virtual ~VectorFile();
 
 
-    /**
-     * @brief Get the size of the vector. May alter the internal state of the
-     * reader.
-     *
-     * @return The size of the vector.
-     */
-    virtual ind_t getSize() override
-    {
-      return m_vector.getSize();
-    }
-
-
-    /**
-     * @brief Set the size of the vector.  
-     *
-     * @param size The new size of the vector.
-     */
-    virtual void setSize(
-        const ind_t size) override
-    {
-      m_vector.setSize(size);
-    }
-
 
     /**
      * @brief Check to see if the size of the vector has been set.

@@ -28,7 +28,7 @@ namespace WildRiver
 {
 
 
-class VectorFactory
+class VectorWriterFactory
 {
   public:
     /**

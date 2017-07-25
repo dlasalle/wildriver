@@ -11,7 +11,7 @@
 
 
 #include "VectorInHandle.hpp"
-#include "VectorFactory.hpp"
+#include "VectorReaderFactory.hpp"
 
 
 
@@ -27,7 +27,7 @@ namespace WildRiver
 
 VectorInHandle::VectorInHandle(
     std::string const & name) :
-  m_reader(VectorFactory::make(name))
+  m_reader(VectorReaderFactory::make(name))
 {
   // do nothing
 }

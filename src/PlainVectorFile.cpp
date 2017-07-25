@@ -124,6 +124,14 @@ PlainVectorFile::~PlainVectorFile()
 ******************************************************************************/
 
 
+void PlainVectorFile::setSize(
+    const ind_t size)
+{
+  m_size = size;
+}
+
+
+
 ind_t PlainVectorFile::getSize()
 {
   if (m_size == NULL_DIM) {

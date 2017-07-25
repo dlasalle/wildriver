@@ -59,6 +59,15 @@ class PlainVectorFile :
 
 
     /**
+    * @brief Set the size of the vector.
+    *
+    * @param size The new size of the vector.
+    */
+    virtual void setSize(
+        const ind_t size) override;
+
+
+    /**
      * @brief Get the size of the vector. May alter the internal state of the
      * reader.
      *
@@ -103,7 +112,7 @@ class PlainVectorFile :
     /**
     * @brief Size of the vector.
     */
-    dim_t m_size;
+    ind_t m_size;
 
 
     /**
