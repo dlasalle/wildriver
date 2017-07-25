@@ -352,7 +352,7 @@ MetisFile::~MetisFile()
 
 void MetisFile::getInfo(
     dim_t & nvtxs,
-    dim_t & nedges,
+    ind_t & nedges,
     int & nvwgt,
     bool & ewgts)
 {

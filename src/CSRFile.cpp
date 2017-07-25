@@ -12,6 +12,7 @@
 
 #include <sstream>
 #include <cstddef>
+#include <cassert>
 #include "CSRFile.hpp"
 
 
@@ -101,7 +102,7 @@ void CSRFile::readHeader()
   firstRow();
 
   m_numRows = 0;
-  m_numRows = 0;
+  m_numCols = 0;
   m_nnz = 0;
 
   while (nextNoncommentLine(m_line)) {
@@ -268,6 +269,10 @@ void CSRFile::getInfo(
     readHeader();
   }
 
+  assert(m_numRows != NULL_DIM); 
+  assert(m_numCols != NULL_DIM); 
+  assert(m_nnz != NULL_IND);
+
   // set values
   nrows = m_numRows;
   ncols = m_numCols;
@@ -285,6 +290,10 @@ void CSRFile::setInfo(
 	m_numRows = nrows;
   m_numCols = ncols;
   m_nnz = nnz;
+
+  assert(m_numRows != NULL_DIM); 
+  assert(m_numCols != NULL_DIM); 
+  assert(m_nnz != NULL_IND);
 
   m_infoSet = true;
 

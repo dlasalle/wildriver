@@ -8,8 +8,9 @@ compiler:
   - gcc
 script:
   - "./configure --test && make && make test"
-  - "./configure --test --index-type=uint32_t && make && make test"
-  - "./configure --test --dimension-type=uint32_t && make && make test"
+  - "./configure --test --index-type=int64_t --dimension-type=uint64_t && make && make test"
+  - "./configure --test --index-type=uint64_t --dimension-type=uint32_t && make && make test"
+  - "./configure --test --index-type=uint32_t --dimension-type=int32_t && make && make test"
   - "./configure --test --value-type=float && make && make test"
   - "./configure --test --value-type=int64_t && make && make test"
 before_deploy:
