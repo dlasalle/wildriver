@@ -33,8 +33,8 @@ show_help() {
   echo "OPTIONS:"
   echo "  --debug"
   echo "    Build with debugging symbols and turn optimizations off."
-  echo "  --assert"
-  echo "    Build with assertions on."
+  echo "  --examples"
+  echo "    Build the examples."
   echo "  --prefix=<prefix>"
   echo "    Set the install prefix."
   echo "  --static"
@@ -85,9 +85,9 @@ for i in "${@}"; do
     --debug)
     CONFIG_FLAGS="${CONFIG_FLAGS} -DDEBUG=1"
     ;;
-    # assert
-    --assert)
-    CONFIG_FLAGS="${CONFIG_FLAGS} -DASSERT=1"
+    # examples
+    --examples)
+    CONFIG_FLAGS="${CONFIG_FLAGS} -DEXAMPLES=1"
     ;;
     # prefix
     --prefix=*)

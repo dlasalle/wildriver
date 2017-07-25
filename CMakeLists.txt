@@ -30,6 +30,19 @@ if (DEFINED DEVEL AND NOT DEVEL EQUAL 0)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic") 
 endif()
 
+
+if (DEFINED WILDRIVER_DIMENSION_TYPE)
+  add_definitions(-DWILDIRVER_DIMENSION_TYPE=${WILDRIVER_DIMENSION_TYPE})
+endif()
+
+if (DEFINED WILDRIVER_INDEX_TYPE)
+  add_definitions(-DWILDIRVER_INDEX_TYPE=${WILDRIVER_INDEX_TYPE})
+endif()
+
+if (DEFINED WILDRIVER_VALUE_TYPE)
+  add_definitions(-DWILDIRVER_VALUE_TYPE=${WILDRIVER_VALUE_TYPE})
+endif()
+
 # Compiler-specific C++11 activation.
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
     execute_process(
@@ -59,4 +72,7 @@ add_subdirectory("include")
 add_subdirectory("src")
 
 
+if (DEFINED EXAMPLES)
+  add_subdirectory("examples")
+endif()
 
