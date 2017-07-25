@@ -154,6 +154,13 @@ bool TextFile::nextLine(
 }
 
 
+void TextFile::setNextLine(
+    std::string const & line)
+{
+  m_stream << line << "\n";
+}
+
+
 
 
 }

@@ -321,6 +321,7 @@ bool MetisFile::nextNoncommentLine(
 
 MetisFile::MetisFile(
     std::string const & fname) : 
+  m_infoSet(false),
   m_numVertices(NULL_DIM),
   m_numEdges(NULL_IND),
   m_currentVertex(0),
@@ -344,6 +345,41 @@ MetisFile::~MetisFile()
 /******************************************************************************
 * PUBLIC FUNCTIONS ************************************************************
 ******************************************************************************/
+
+
+void MetisFile::getInfo(
+    dim_t & nvtxs,
+    dim_t & nedges,
+    int & nvwgt,
+    bool & ewgts)
+{
+  if (!m_infoSet) {
+    readHeader();
+    m_infoSet = true;
+  }
+
+  nvtxs = m_numVertices;
+  nedges = m_numEdges;
+  nvwgt = m_numVertexWeights;
+  ewgts = m_hasEdgeWeights;
+}
+
+
+void MetisFile::setInfo(
+    dim_t const nvtxs,
+    ind_t const nedges,
+    int nvwgt,
+    bool ewgts)
+{
+  m_numVertices = nvtxs;
+  m_numEdges = nedges;
+  m_numVertexWeights = nvwgt;
+  m_hasEdgeWeights = ewgts;
+
+  m_infoSet = true;
+
+  writeHeader();
+}
 
 
 void MetisFile::read(

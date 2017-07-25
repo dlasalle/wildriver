@@ -131,6 +131,12 @@ class MetisFile :
 
   private:
     /**
+     * @brief Whether or not the graph information has been set.
+     */
+    bool m_infoSet;
+
+
+    /**
      * @brief The number of vertices in the graph. 
      */
     dim_t m_numVertices;

@@ -21,6 +21,10 @@
 #include <memory>
 
 
+#include "IMatrixReader.hpp"
+#include "IGraphReader.hpp"
+
+
 
 
 namespace WildRiver
