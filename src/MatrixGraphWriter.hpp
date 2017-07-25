@@ -9,6 +9,7 @@
 
 
 
+
 #ifndef WILDRIVER_MATRIXGRAPHWRITER_HPP
 #define WILDRIVER_MATRIXGRAPHWRITER_HPP
 
@@ -30,7 +31,7 @@ namespace WildRiver
 
 
 class MatrixGraphWriter :
-  public IGraphReader
+    public IGraphWriter
 {
   public:
     /**
@@ -40,7 +41,7 @@ class MatrixGraphWriter :
      * @param mfile A pointer the MatrixFile to adapt.
      */
     MatrixGraphWriter(
-        std::unique_ptr<IMatrixFile>& file);
+        std::unique_ptr<IMatrixWriter>& file);
 
 
     /**
@@ -83,7 +84,7 @@ class MatrixGraphWriter :
 
 
   private:
-    std::unique_ptr<IMatrixReader> m_reader;
+    std::unique_ptr<IMatrixWriter> m_writer;
 
 
     // disable copying

@@ -41,7 +41,7 @@ class MatrixGraphReader :
      * @param mfile A pointer the MatrixFile to adapt.
      */
     MatrixGraphReader(
-        std::unique_ptr<IMatrixFile>& file);
+        std::unique_ptr<IMatrixReader>& file);
 
 
     /**

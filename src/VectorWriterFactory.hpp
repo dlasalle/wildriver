@@ -1,6 +1,6 @@
 /**
- * @file VectorFactory.hpp
- * @brief Class for instantiating vector files. 
+ * @file VectorWriterFactory.hpp
+ * @brief Class for instantiating vector writers. 
  * @author Dominique LaSalle <wildriver@domnet.org>
  * Copyright 2015-2016
  * @version 1
@@ -10,8 +10,8 @@
 
 
 
-#ifndef WILDRIVER_VECTORFACTORY_HPP
-#define WILDRIVER_VECTORFACTORY_HPP
+#ifndef WILDRIVER_VECTORWRITERFACTORY_HPP
+#define WILDRIVER_VECTORWRITERFACTORY_HPP
 
 
 
@@ -32,13 +32,14 @@ class VectorFactory
 {
   public:
     /**
-     * @brief Allocate a new vector file subclass based on teh file extension.
+     * @brief Allocate a new vector writer subclass based on teh file
+     * extension.
      *
      * @param name The filename/path to open.
      *
-     * @return The newly opened vector file.
+     * @return The newly opened vector writer.
      */
-    static std::unique_ptr<IVectorFile> make(
+    static std::unique_ptr<IVectorWriter> make(
         std::string const & name);
 
 

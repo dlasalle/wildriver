@@ -147,115 +147,6 @@ void CSRFile::writeHeader()
 }
 
 
-
-
-/******************************************************************************
-* CONSTRUCTORS / DESTRUCTORS **************************************************
-******************************************************************************/
-
-
-CSRFile::CSRFile(
-    std::string const & fname) :
-  m_numRows(NULL_DIM),
-  m_numCols(NULL_DIM),
-  m_nnz(NULL_IND),
-  m_currentRow(0),
-  m_line(BUFFER_SIZE,'\0'),
-  m_file(fname)
-{
-  // do nothing
-}
-
-
-CSRFile::~CSRFile()
-{
-  // do nothing
-}
-
-
-
-
-/******************************************************************************
-* PUBLIC FUNCTIONS ************************************************************
-******************************************************************************/
-
-
-void CSRFile::read(
-    ind_t * const rowptr,
-    dim_t * const rowind,
-    val_t * const rowval,
-    double * const progress)
-{
-  std::vector<matrix_entry_struct> row;
-
-  dim_t const interval = m_numRows > 100 ? m_numRows / 100 : 1;
-  double const increment = 1.0/100.0;
-
-  // read in the rows the matrix into our csr
-  dim_t j = 0;
-  rowptr[0] = j;
-  for (dim_t i = 0; i < m_numRows; ++i) {
-    dim_t degree;
-
-    dim_t * const rowindStart = rowind+rowptr[i];
-    val_t * const rowvalStart = rowval ? rowval+rowptr[i] : nullptr;
-
-    if (!getNextRow(&degree,rowindStart,rowvalStart)) {
-      // fewer rows than expected
-      throw EOFException(std::string("Failed to read row ") + \
-          std::to_string(i) + std::string("/") + std::to_string(m_numRows)); 
-    }
-
-    rowptr[i+1] = rowptr[i]+degree;
-
-    if (progress != nullptr && i % interval == 0) {
-      *progress += increment;
-    }
-  }
-
-  if (rowptr[m_numRows] != m_nnz) {
-    // we read in the wrong number of non-zeroes
-    throw EOFException(std::string("Only found ") + std::to_string(j) + \
-        std::string("/") + std::to_string(m_nnz) + \
-        std::string(" non-zeroes in file"));
-  }
-}
-
-
-void CSRFile::write(
-    ind_t const * const rowptr,
-    dim_t const * const rowind,
-    val_t const * const rowval)
-{
-  std::vector<matrix_entry_struct> row;
-
-
-  for (dim_t i = 0; i < m_numRows; ++i) {
-    // build and insert a new row
-    row.clear();
-    for (ind_t j=rowptr[i];j<rowptr[i+1];++j) {
-      matrix_entry_struct entry;
-
-      entry.ind = rowind[j];
-      if (rowval) {
-        entry.val = rowval[j];
-      } else {
-        entry.val = 1;
-      }
-      row.push_back(entry);
-    }
-    setNextRow(row);
-  }
-}
-
-
-
-
-/******************************************************************************
-* PROTECTED FUNCTIONS *********************************************************
-******************************************************************************/
-
-
 void CSRFile::firstRow()
 {
   // go to the start of the file
@@ -330,6 +221,143 @@ void CSRFile::setNextRow(
   m_file.setNextLine(streamBuffer.str());
 
   ++m_currentRow;
+}
+
+
+
+
+/******************************************************************************
+* CONSTRUCTORS / DESTRUCTORS **************************************************
+******************************************************************************/
+
+
+CSRFile::CSRFile(
+    std::string const & fname) :
+  m_infoSet(false),
+  m_numRows(NULL_DIM),
+  m_numCols(NULL_DIM),
+  m_nnz(NULL_IND),
+  m_currentRow(0),
+  m_line(BUFFER_SIZE,'\0'),
+  m_file(fname)
+{
+  // do nothing
+}
+
+
+CSRFile::~CSRFile()
+{
+  // do nothing
+}
+
+
+
+
+/******************************************************************************
+* PUBLIC FUNCTIONS ************************************************************
+******************************************************************************/
+
+
+void CSRFile::getInfo(
+    dim_t & nrows,
+    dim_t & ncols,
+    ind_t & nnz)
+{
+  // see if need to read the header
+  if (!m_infoSet) {
+    readHeader();
+  }
+
+  // set values
+  nrows = m_numRows;
+  ncols = m_numCols;
+  nnz = m_nnz;
+
+  m_infoSet = true;
+}
+
+
+void CSRFile::setInfo(
+    dim_t const nrows,
+    dim_t const ncols,
+    ind_t const nnz)
+{
+	m_numRows = nrows;
+  m_numCols = ncols;
+  m_nnz = nnz;
+
+  m_infoSet = true;
+
+  writeHeader();
+}
+
+
+void CSRFile::read(
+    ind_t * const rowptr,
+    dim_t * const rowind,
+    val_t * const rowval,
+    double * const progress)
+{
+  std::vector<matrix_entry_struct> row;
+
+  dim_t const interval = m_numRows > 100 ? m_numRows / 100 : 1;
+  double const increment = 1.0/100.0;
+
+  // read in the rows the matrix into our csr
+  dim_t j = 0;
+  rowptr[0] = j;
+  for (dim_t i = 0; i < m_numRows; ++i) {
+    dim_t degree;
+
+    dim_t * const rowindStart = rowind+rowptr[i];
+    val_t * const rowvalStart = rowval ? rowval+rowptr[i] : nullptr;
+
+    if (!getNextRow(&degree,rowindStart,rowvalStart)) {
+      // fewer rows than expected
+      throw EOFException(std::string("Failed to read row ") + \
+          std::to_string(i) + std::string("/") + std::to_string(m_numRows)); 
+    }
+
+    rowptr[i+1] = rowptr[i]+degree;
+
+    if (progress != nullptr && i % interval == 0) {
+      *progress += increment;
+    }
+  }
+
+  if (rowptr[m_numRows] != m_nnz) {
+    // we read in the wrong number of non-zeroes
+    throw EOFException(std::string("Only found ") + std::to_string(j) + \
+        std::string("/") + std::to_string(m_nnz) + \
+        std::string(" non-zeroes in file"));
+  }
+}
+
+
+void CSRFile::write(
+    ind_t const * const rowptr,
+    dim_t const * const rowind,
+    val_t const * const rowval)
+{
+  std::vector<matrix_entry_struct> row;
+
+
+  for (dim_t i = 0; i < m_numRows; ++i) {
+    // build and insert a new row
+    row.clear();
+    for (ind_t j=rowptr[i];j<rowptr[i+1];++j) {
+      matrix_entry_struct entry;
+
+      entry.ind = rowind[j];
+      if (rowval) {
+        entry.val = rowval[j];
+      } else {
+        entry.val = 1;
+      }
+      row.push_back(entry);
+    }
+    setNextRow(row);
+  }
 }
 
 

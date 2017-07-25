@@ -65,6 +65,32 @@ class CSRFile :
 
 
     /**
+     * @brief Get the number of rows, columns, and non-zeros in the matrix.
+     *
+     * @param nrows The number of rows.
+     * @param ncols The number of columns.
+     * @param nnz THe number of non-zeros.
+     */
+    virtual void getInfo(
+        dim_t & nrows,
+        dim_t & ncols,
+        ind_t & nnz) override;
+
+
+    /**
+     * @brief Set the matrix information for this file.
+     *
+     * @param nrows The number of rows in the matrix.
+     * @param ncols The number of columns in the matrix.
+     * @param nnz The number of non-zeroes in the matrix.
+     */
+    virtual void setInfo(
+        dim_t nrows,
+        dim_t ncols,
+        ind_t nnz) override;
+
+
+    /**
      * @brief Get the sparse matrix in CSR form. The pointers must be
      * pre-allocated to the sizes required by the info of the matrix 
      *
@@ -102,6 +128,12 @@ class CSRFile :
 
 
   private:
+    /**
+    * @brief Whether or not the matrix information has been set.
+    */
+    bool m_infoSet;
+
+
     /**
      * @brief The number of rows in the matrix.
      */

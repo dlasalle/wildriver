@@ -20,6 +20,41 @@ namespace WildRiver
 {
 
 
+
+/******************************************************************************
+* HELPER FUNCTIONS ************************************************************
+******************************************************************************/
+
+
+namespace
+{
+
+
+bool isComment(
+    std::string const & line) noexcept
+{
+  if (line.size() > 0) {
+    switch (line[0]) {
+      case '#':
+      case '%':
+      case '/':
+        return true;
+      default:
+        return false;
+    }
+  } else {
+    return false;
+  }
+}
+
+
+
+
+}
+
+
+
+
 /******************************************************************************
 * PUBLIC STATIC FUNCTIONS *****************************************************
 ******************************************************************************/
@@ -41,28 +76,26 @@ bool PlainVectorFile::hasExtension(
 
 
 
-
 /******************************************************************************
-* PROTECTED FUNCTIONS *********************************************************
+* PRIVATE FUNCTIONS ***********************************************************
 ******************************************************************************/
 
 
-bool PlainVectorFile::isComment(
-    std::string const & line) const noexcept
+bool PlainVectorFile::nextNoncommentLine(
+    std::string & line)
 {
-  if (line.size() > 0) {
-    switch (line[0]) {
-      case '#':
-      case '%':
-      case '/':
-        return true;
-      default:
-        return false;
+  do {
+    if (!m_file.nextLine(line)) {
+      return false;
     }
-  } else {
-    return false;
-  }
+  } while (isComment(line));
+
+  return true;
 }
+
+
+
+
 
 
 /******************************************************************************
@@ -72,7 +105,8 @@ bool PlainVectorFile::isComment(
 
 PlainVectorFile::PlainVectorFile(
     std::string const & name) :
-  VectorTextFile(name),
+  m_file(name),
+  m_size(NULL_DIM),
   m_buffer()
 {
   // do nothing
@@ -92,12 +126,12 @@ PlainVectorFile::~PlainVectorFile()
 
 ind_t PlainVectorFile::getSize()
 {
-  if (!isSizeSet()) {
+  if (m_size == NULL_DIM) {
     size_t nlines = 0;
     std::string m_buffer;
 
-    if (!isOpenRead()) {
-      openRead();
+    if (!m_file.isOpenRead()) {
+      m_file.openRead();
     }
 
     // cout non-comment lines
@@ -105,13 +139,13 @@ ind_t PlainVectorFile::getSize()
       ++nlines;
     }
 
-    VectorFile::setSize(nlines);
+    m_size = nlines;
 
     // go back to the beginning
-    resetStream();
+    m_file.resetStream();
   }
 
-  return VectorFile::getSize();
+  return m_size;
 }
 
 
@@ -119,13 +153,13 @@ void PlainVectorFile::read(
     val_t * const vals,
     double * progress)
 {
-  if (!isOpenRead()) {
-    openRead();
+  if (!m_file.isOpenRead()) {
+    m_file.openRead();
   }
 
   const size_t n = getSize();
 
-  resetStream();
+  m_file.resetStream();
 
   ind_t const interval = n > 100 ? n / 100 : 1;
   double const increment = 1.0 / 100.0;
@@ -152,18 +186,18 @@ void PlainVectorFile::write(
     val_t const * const vals,
     double  * progress)
 {
-  if (!isSizeSet()) {
+  if (m_size == NULL_DIM) {
     throw UnsetInfoException("Size of vector is not set before call to " \
         "write()");
   }
 
-  if (!isOpenWrite()) {
-    openWrite();
+  if (!m_file.isOpenWrite()) {
+    m_file.openWrite();
   }
 
   const size_t n = getSize();
   for (size_t i = 0; i < n; ++i) {
-	  getStream() << vals[i] << std::endl;	
+    m_file.setNextLine(std::to_string(vals[i]));
   }
 }
 

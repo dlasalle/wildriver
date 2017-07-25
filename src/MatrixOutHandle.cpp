@@ -11,7 +11,7 @@
 
 
 #include "MatrixOutHandle.hpp"
-#include "MatrixFactory.hpp"
+#include "MatrixWriterFactory.hpp"
 
 
 
@@ -27,7 +27,7 @@ namespace WildRiver
 
 MatrixOutHandle::MatrixOutHandle(
     std::string const & name) :
-  m_writer(MatrixFactory::make(name))
+  m_writer(MatrixWriterFactory::make(name))
 {
   // do nothing
 }
@@ -64,11 +64,6 @@ void MatrixOutHandle::writeSparse(
 }
 
 
-void MatrixOutHandle::setNextRow(
-    std::vector<matrix_entry_struct> const & next)
-{
-  m_writer->setNextRow(next);
-}
 
 
 }

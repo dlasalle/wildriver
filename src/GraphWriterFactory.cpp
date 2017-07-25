@@ -8,6 +8,7 @@
  */
 
 
+#include <map>
 
 #include "GraphWriterFactory.hpp"
 #include "MetisFile.hpp"
@@ -28,16 +29,20 @@ namespace WildRiver
 
 
 std::unique_ptr<IGraphWriter> GraphWriterFactory::make(
-    std::string const & name)
+    std::string const & name,
+    bool useAdapter)
 {
   std::unique_ptr<IGraphWriter> file;
   // determine what type of reader to instantiate based on extension
   if (MetisFile::hasExtension(name)) {
     file.reset(new MetisFile(name));
-  } else {
+  } else if (useAdapter) {
     // need to wrap it with an adapter
-    std::unique_ptr<IMatrixWriter> matPtr(MatrixFactory::make(name));
+    std::unique_ptr<IMatrixWriter> matPtr(MatrixWriterFactory::make(name, \
+        false));
     file.reset(new MatrixGraphWriter(matPtr));
+  } else {
+    throw UnknownExtensionException(std::string("Unknown filetype: ") + name);
   }
  
   return file;

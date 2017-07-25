@@ -1,6 +1,6 @@
 /**
- * @file MatrixReaderFactory.hpp
- * @brief Class for instantiating matrix readers.
+ * @file MatrixWriterFactory.hpp
+ * @brief Class for instantiating matrix writers.
  * @author Dominique LaSalle <wildriver@domnet.org>
  * Copyright 2015-2016
  * @version 1
@@ -10,15 +10,15 @@
 
 
 
-#ifndef WILDRIVER_MATRIXREADERFACTORY_HPP
-#define WILDRIVER_MATRIXREADERFACTORY_HPP
+#ifndef WILDRIVER_MATRIXWRITERFACTORY_HPP
+#define WILDRIVER_MATRIXWRITERFACTORY_HPP
 
 
 
 
 #include <memory>
 #include <string>
-#include "IMatrixReader.hpp"
+#include "IMatrixWriter.hpp"
 
 
 
@@ -26,21 +26,23 @@ namespace WildRiver
 {
 
 
-class MatrixReaderFactory
+class MatrixWriterFactory
 {
   public:
     /**
      * @brief Instantiate a matrix file.
      *
      * @param fname The name of the file to open.
+     * @param useAdapter Whether or not to use an adapter for a graph file.
      *
      * @return The instantiated object.
      *
      * @throw UnknownExtensionException If no class reading the specified file
      * type can be found.
      */
-    static std::unique_ptr<IMatrixReader> make(
-        std::string const & name);
+    static std::unique_ptr<IMatrixWriter> make(
+        std::string const & name,
+        bool useAdapter = true);
 };
 
 

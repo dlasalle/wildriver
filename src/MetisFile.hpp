@@ -19,6 +19,7 @@
 #include "IGraphReader.hpp"
 #include "IGraphWriter.hpp"
 #include "TextFile.hpp"
+#include "MatrixEntry.hpp"
 
 
 
@@ -107,7 +108,7 @@ class MetisFile :
         ind_t const * xadj,
         dim_t const * adjncy,
         val_t const * vwgt,
-        val_t const * adjwgt) = 0;
+        val_t const * adjwgt);
 
 
     /**
@@ -123,34 +124,40 @@ class MetisFile :
         dim_t nvtxs,
         ind_t nedges,
         int nvwgt,
-        bool ewgts) = 0;
+        bool ewgts);
 
 
 
 
   private:
     /**
-     * @brief The number of rows in the matrix.
+     * @brief The number of vertices in the graph. 
      */
-    dim_t m_numRows;
-
-
-    /**
-     * @brief The number of columns in the matrix.
-     */
-    dim_t m_numCols;
+    dim_t m_numVertices;
 
 
     /**
      * @brief The number of non-zeros in the matrix.
      */
-    ind_t m_nnz;
+    ind_t m_numEdges;
 
 
     /**
     * @brief The current row being processed.
     */
-    dim_t m_currentRow;
+    dim_t m_currentVertex;
+
+
+    /**
+    * @brief The number of vertex weights in the graph file.
+    */
+    dim_t m_numVertexWeights;
+
+
+    /**
+    * @brief Whether or not the graph file stores edge weights.
+    */
+    bool m_hasEdgeWeights;
 
 
     /**
@@ -183,6 +190,17 @@ class MetisFile :
      */
     virtual bool isComment(
         std::string const & line) const noexcept;
+
+
+    /**
+    * @brief Get the next non-comment line from the file.
+    *
+    * @param line The line to fill.
+    *
+    * @return True if the line was filled.
+    */
+    bool nextNoncommentLine(
+        std::string & line);
 
 
     /**

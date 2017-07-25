@@ -33,6 +33,7 @@ class GraphWriterFactory
      * The returned pointer must be delete'd by the caller.
      *
      * @param fname The filename/path.
+     * @param useAdapter Whether or not to use an adapter for a matrix file. 
      *
      * @return A pointer to the new graph file instantion.
      *
@@ -40,7 +41,8 @@ class GraphWriterFactory
      * type can be found.
      */
     static std::unique_ptr<IGraphWriter> make(
-        std::string const & name);
+        std::string const & name,
+        bool useAdapter = true);
 
 
 

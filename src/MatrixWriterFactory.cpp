@@ -1,6 +1,6 @@
 /**
- * @file MatrixReaderFactory.cpp
- * @brief Implementation of the MatrixReaderFactory class.
+ * @file MatrixWriterFactory.cpp
+ * @brief Implementation of the MatrixWriterFactory class.
  * @author Dominique LaSalle <wildriver@domnet.org>
  * Copyright 2015-2016
  * @version 1
@@ -10,11 +10,11 @@
 
 
 
-#include "MatrixReaderFactory.hpp"
+#include "MatrixWriterFactory.hpp"
 #include "CSRFile.hpp"
 #include "MetisFile.hpp"
-#include "GraphReaderFactory.hpp"
-#include "GraphMatrixReader.hpp"
+#include "GraphMatrixWriter.hpp"
+#include "GraphWriterFactory.hpp"
 
 
 
@@ -28,17 +28,19 @@ namespace WildRiver
 ******************************************************************************/
 
 
-std::unique_ptr<IMatrixReader> MatrixReaderFactory::make(
-    std::string const & name)
+std::unique_ptr<IMatrixWriter> MatrixWriterFactory::make(
+    std::string const & name,
+    bool useAdapter)
 {
-  std::unique_ptr<IMatrixReader> file;
+  std::unique_ptr<IMatrixWriter> file;
 
   // determine what type of reader to instantiate based on extension
   if (CSRFile::hasExtension(name)) {
     file.reset(new CSRFile(name));
-  } else if (MetisFile::hasExtension(name)) {
-    std::unique_ptr<IGraphReader> graphPtr(GraphReaderFactory::make(name));
-    file.reset(new GraphMatrixReader(graphPtr));
+  } else if (useAdapter) {
+    std::unique_ptr<IGraphWriter> graphPtr(GraphWriterFactory::make(name, \
+        false));
+    file.reset(new GraphMatrixWriter(graphPtr));
   } else {
     throw UnknownExtensionException(std::string("Unknown filetype: ") + name);
   }
