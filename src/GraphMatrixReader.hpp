@@ -1,45 +1,53 @@
 /**
- * @file IMatrixReader.hpp
- * @brief Interface for reading sparse matrices.
- * @author Dominique LaSalle <wildriver@domnet.org>
- * Copyright 2015-2016
- * @version 1
- *
- */
+* @file GraphMatrixReader.hpp
+* @brief An adapter class for treating graphs as matrices.
+* @author Dominique LaSalle <dominique@solidlake.com>
+* Copyright 2017, Solid Lake LLC
+* @version 1
+* @date 2017-07-24
+*/
 
 
 
 
-#ifndef WILDRIVER_IMATRIXREADER_HPP
-#define WILDRIVER_IMATRIXREADER_HPP
+#ifndef WILDRIVER_GRAPHMATRIXREADER_HPP
+#define WILDRIVER_GRAPHMATRIXREADER_HPP
 
 
 
 
-#include <string>
 #include <vector>
-
-#include "base.h"
-#include "MatrixEntry.hpp"
-#include "Exception.hpp"
+#include <string>
+#include <memory>
 
 
+#include "IMatrixReader.hpp"
+#include "IGraphReader.hpp"
 
 
-namespace WildRiver 
+
+
+namespace WildRiver
 {
 
 
-class IMatrixReader
+class GraphMatrixReader :
+  public IMatrixReader
 {
   public:
     /**
-     * @brief Virtual destructor.
-     */
-    virtual ~IMatrixReader() 
-    {
-      // do nothing
-    }
+    * @brief Create a new adapter.
+    *
+    * @param reader The MatrixReader to adapt.
+    */
+    GraphMatrixReader(
+        std::unique_ptr<IGraphReader>& reader);
+
+
+    /**
+    * @brief Destructor.
+    */
+    virtual ~GraphMatrixReader();
 
 
     /**
@@ -61,7 +69,7 @@ class IMatrixReader
         ind_t * rowptr,
         dim_t * rowind,
         val_t * rowval,
-        double * progress) = 0;
+        double * progress) override;
 
 
     /**
@@ -74,7 +82,20 @@ class IMatrixReader
     virtual void getInfo(
         dim_t & nrows,
         dim_t & ncols,
-        ind_t & nnz) = 0;
+        ind_t & nnz) override;
+
+
+  private:
+    std::unique_ptr<IGraphReader> m_reader;
+
+
+    // disable copying
+    GraphMatrixReader(
+        GraphMatrixReader const & rhs);
+    GraphMatrixReader& operator=(
+        GraphMatrixReader const & rhs);
+
+
 
 
 };

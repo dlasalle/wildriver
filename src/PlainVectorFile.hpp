@@ -17,7 +17,12 @@
 
 
 
-#include "VectorTextFile.hpp"
+#include <string>
+
+
+#include "IVectorReader.hpp"
+#include "IVectorWriter.hpp"
+#include "TextFile.hpp"
 
 
 
@@ -27,7 +32,8 @@ namespace WildRiver
 
 
 class PlainVectorFile :
-  public VectorTextFile
+    public IVectorReader,
+    public IVectorWriter
 {
   public:
     /**
@@ -55,6 +61,15 @@ class PlainVectorFile :
      * @brief Close file and associated memory.
      */
     ~PlainVectorFile();
+
+
+    /**
+    * @brief Set the size of the vector.
+    *
+    * @param size The new size of the vector.
+    */
+    virtual void setSize(
+        const ind_t size) override;
 
 
     /**
@@ -92,23 +107,34 @@ class PlainVectorFile :
 
 
 
-  protected:
-    /**
-     * @brief Determine the given line is a comment.
-     *
-     * @param line The line.
-     *
-     * @return True if the line is a comment.
-     */
-    virtual bool isComment(
-        std::string const & line) const noexcept override;
-
-
   private:
+    /**
+    * @brief Underlying text file.
+    */
+    TextFile m_file;
+
+
+    /**
+    * @brief Size of the vector.
+    */
+    ind_t m_size;
+
+
     /**
      * @brief The string for buffer read lines into.
      */
     std::string m_buffer;
+
+
+    /**
+    * @brief Get the next non-comment line from the file.
+    *
+    * @param line The line buffer.
+    *
+    * @return True if a line filled the buffer.
+    */
+    bool nextNoncommentLine(
+        std::string & line);
 
 
 

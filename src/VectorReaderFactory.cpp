@@ -1,5 +1,5 @@
 /**
- * @file VectorFactory.cpp
+ * @file VectorReaderFactory.cpp
  * @brief Implemnetation of class for 
  * @author Dominique LaSalle <wildriver@domnet.org>
  * Copyright 2015-2016
@@ -11,7 +11,7 @@
 
 
 #include "Exception.hpp"
-#include "VectorFactory.hpp"
+#include "VectorReaderFactory.hpp"
 #include "PlainVectorFile.hpp"
 
 
@@ -27,10 +27,10 @@ namespace WildRiver
 ******************************************************************************/
 
 
-std::unique_ptr<IVectorFile> VectorFactory::make(
+std::unique_ptr<IVectorReader> VectorReaderFactory::make(
     std::string const & name)
 {
-  std::unique_ptr<IVectorFile> file;
+  std::unique_ptr<IVectorReader> file;
 
   // determine what type of reader to instantiate based on extension
   if (PlainVectorFile::hasExtension(name)) {

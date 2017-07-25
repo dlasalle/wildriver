@@ -16,7 +16,9 @@
 
 
 
-#include "MatrixTextFile.hpp"
+#include "IMatrixReader.hpp"
+#include "IMatrixWriter.hpp"
+#include "TextFile.hpp"
 
 
 
@@ -25,7 +27,8 @@ namespace WildRiver {
 
 
 class CSRFile : 
-  public MatrixTextFile
+  public IMatrixReader,
+  public IMatrixWriter
 {
   public:
     /**
@@ -62,9 +65,126 @@ class CSRFile :
 
 
     /**
+     * @brief Get the number of rows, columns, and non-zeros in the matrix.
+     *
+     * @param nrows The number of rows.
+     * @param ncols The number of columns.
+     * @param nnz THe number of non-zeros.
+     */
+    virtual void getInfo(
+        dim_t & nrows,
+        dim_t & ncols,
+        ind_t & nnz) override;
+
+
+    /**
+     * @brief Set the matrix information for this file.
+     *
+     * @param nrows The number of rows in the matrix.
+     * @param ncols The number of columns in the matrix.
+     * @param nnz The number of non-zeroes in the matrix.
+     */
+    virtual void setInfo(
+        dim_t nrows,
+        dim_t ncols,
+        ind_t nnz) override;
+
+
+    /**
+     * @brief Get the sparse matrix in CSR form. The pointers must be
+     * pre-allocated to the sizes required by the info of the matrix 
+     *
+     * |rowptr| = nrows + 1
+     * |rowind| = nnz
+     * |rowval| = nnz
+     *
+     * @param rowptr The row pointer indicating the start of each row.
+     * @param rowind The row column indexs (i.e., for each element in a row,
+     * the column index corresponding to that element).
+     * @param rowval The row values.
+     * @param progress The variable to update as the matrix is loaded (may be
+     * null).
+     */
+    virtual void read(
+        ind_t * rowptr,
+        dim_t * rowind,
+        val_t * rowval,
+        double * progress) override;
+
+
+    /**
+     * @brief Write the given CSR structure to teh file. The information for
+     * the matrix must already be set.
+     *
+     * @param rowptr The row pointer indicating the start of each row.
+     * @param rowind The row column indexs (i.e., for each element in a row,
+     * the column index corresponding to that element).
+     * @param rowval The row values.
+     */
+    virtual void write(
+        ind_t const * rowptr,
+        dim_t const * rowind,
+        val_t const * rowval) override;
+
+
+  private:
+    /**
+    * @brief Whether or not the matrix information has been set.
+    */
+    bool m_infoSet;
+
+
+    /**
+     * @brief The number of rows in the matrix.
+     */
+    dim_t m_numRows;
+
+
+    /**
+     * @brief The number of columns in the matrix.
+     */
+    dim_t m_numCols;
+
+
+    /**
+     * @brief The number of non-zeros in the matrix.
+     */
+    ind_t m_nnz;
+
+
+    /**
+    * @brief The current row being processed.
+    */
+    dim_t m_currentRow;
+
+
+    /**
+     * @brief A buffer for reading each line.
+     */
+    std::string m_line;
+
+
+    /**
+     * @brief The underlying text file.
+     */
+    TextFile m_file;
+
+
+    /**
+    * @brief Get the next non-comment line from the file.
+    *
+    * @param line The line buffer.
+    *
+    * @return True if a line filled the buffer.
+    */
+    bool nextNoncommentLine(
+        std::string & line);
+
+
+    /**
      * @brief Reset the current position in the matrix file to the first row.
      */
-    virtual void firstRow() override;
+    void firstRow();
 
 
     /**
@@ -78,10 +198,10 @@ class CSRFile :
      *
      * @return True if another row was found in the file.
      */
-    virtual bool getNextRow(
+    bool getNextRow(
         dim_t * numNonZeros,
         dim_t * columns,
-        val_t * values) override;
+        val_t * values);
 
 
     /**
@@ -89,34 +209,22 @@ class CSRFile :
      *
      * @param next The row to set.
      */
-    virtual void setNextRow(
-        std::vector<matrix_entry_struct> const & next) override;
+    void setNextRow(
+        std::vector<matrix_entry_struct> const & next);
 
 
-    /**
-     * @brief Get the name of this matrix file type.
-     *
-     * @return The matrix file type name.
-     */
-    virtual std::string const & getName() const noexcept override
-    {
-      return NAME;
-    } 
-
-
-  protected:
     /**
      * @brief Read the header of this matrix file. Populates internal fields
      * with the header information.
      */
-    virtual void readHeader() override;
+    void readHeader();
 
 
     /**
      * @brief Write the header of this matrix file. The header consists of
      * internal fields set by "setInfo()".
      */
-    virtual void writeHeader() override; 
+    void writeHeader(); 
 
 
     /**
@@ -126,12 +234,11 @@ class CSRFile :
      *
      * @return True if the line is a comment.
      */
-    virtual bool isComment(
-        std::string const & line) const noexcept override;
+    bool isComment(
+        std::string const & line) const noexcept;
 
 
-  private:
-    std::string m_line;
+
 
 
 

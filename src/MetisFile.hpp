@@ -16,7 +16,10 @@
 
 
 
-#include "GraphTextFile.hpp"
+#include "IGraphReader.hpp"
+#include "IGraphWriter.hpp"
+#include "TextFile.hpp"
+#include "MatrixEntry.hpp"
 
 
 
@@ -25,7 +28,8 @@ namespace WildRiver {
 
 
 class MetisFile : 
-  public GraphTextFile
+  public IGraphReader,
+  public IGraphWriter
 {
   public:
     /**
@@ -56,43 +60,173 @@ class MetisFile :
 
 
     /**
-     * @brief Reset the current position in the matrix file to the first row.
+     * @brief Read the CSR structure of the graph.
+     *
+     * @param xadj The adjacency list pointer (length nvtxs+1).
+     * @param adjncy The adjacency list (length nedges).
+     * @param vwgt The vertex weights (length nvtxs*nvwgt). This may be NULL in
+     * order to ignore vertex weights. If it is specified and the file does not
+     * contain vertex weights, it will be filled with ones.
+     * @param adjwgt The edge weights (length nedges). This may be NULL in
+     * order to ignore edge weights. If it is specified and the file does not
+     * contain edge weights, it will be filled with ones.
+     * @param progress The variable to update as the graph is loaded (may be
+     * null).
      */
-    virtual void firstRow() override;
+    virtual void read(
+        ind_t * xadj,
+        dim_t * adjncy,
+        val_t * vwgt,
+        val_t * adjwgt,
+        double * progress) override;
+
+  
+    /**
+     * @brief Get information about the graph.
+     *
+     * @param nvtxs The number of vertices.
+     * @param nedges The number of edges (directed).
+     * @param nvwgt The number of vertex weights (constraints).
+     * @param ewgts Whether or not edge weights are specified.
+     */
+    virtual void getInfo(
+        dim_t & nvtxs,
+        ind_t & nedges,
+        int & nvwgt,
+        bool & ewgts) override;
+
+
+    /**
+     * @brief Write a graph file from the given CSR structure.
+     *
+     * @param xadj The adjacency list pointer (length nvtxs+1).
+     * @param adjncy The adjacency list (length nedges).
+     * @param vwgt The vertex weights. 
+     * @param adjwgt The edge weights.
+     */
+    virtual void write(
+        ind_t const * xadj,
+        dim_t const * adjncy,
+        val_t const * vwgt,
+        val_t const * adjwgt);
+
+
+    /**
+     * @brief Set the information for the graph. This must be called before
+     * writing the graph.
+     *
+     * @param nvtxs The number of vertices.
+     * @param nedges The number of edges (an undirected edge counts as two).
+     * @param nvwgt The number of vertex weights (constraints).
+     * @param ewgts Whether or not edge weights are present.
+     */
+    virtual void setInfo(
+        dim_t nvtxs,
+        ind_t nedges,
+        int nvwgt,
+        bool ewgts);
+
+
+
+
+  private:
+    /**
+     * @brief Whether or not the graph information has been set.
+     */
+    bool m_infoSet;
+
+
+    /**
+     * @brief The number of vertices in the graph. 
+     */
+    dim_t m_numVertices;
+
+
+    /**
+     * @brief The number of non-zeros in the matrix.
+     */
+    ind_t m_numEdges;
+
+
+    /**
+    * @brief The current row being processed.
+    */
+    dim_t m_currentVertex;
+
+
+    /**
+    * @brief The number of vertex weights in the graph file.
+    */
+    dim_t m_numVertexWeights;
+
+
+    /**
+    * @brief Whether or not the graph file stores edge weights.
+    */
+    bool m_hasEdgeWeights;
+
+
+    /**
+     * @brief Line buffer.
+     */
+    std::string m_line;
+
+
+    /**
+     * @brief The underlying text file.
+     */
+    TextFile m_file;
+
+
+    /**
+     * @brief Get the flags representing the weights associated with this
+     * graph.
+     *
+     * @return 
+     */
+    int getWeightFlags();
+
+
+    /**
+     * @brief Determine if teh given line is a comment.
+     *
+     * @param line The line.
+     *
+     * @return True if the line is a comment.
+     */
+    virtual bool isComment(
+        std::string const & line) const noexcept;
+
+
+    /**
+    * @brief Get the next non-comment line from the file.
+    *
+    * @param line The line to fill.
+    *
+    * @return True if the line was filled.
+    */
+    bool nextNoncommentLine(
+        std::string & line);
+
+
+    /**
+     * @brief Read the header of this matrix file. Populates internal fields
+     * with the header information.
+     */
+    virtual void readHeader();
+
+
+    /**
+     * @brief Write the header of this matrix file. The header consists of
+     * internal fields set by "setInfo()".
+     */
+    virtual void writeHeader(); 
 
 
     /**
      * @brief Reset the current position in the graph to the first vertex.
      */
-    virtual void firstVertex() override;
-
-
-    /**
-     * @brief Get the name of this matrix file type.
-     *
-     * @return The matrix file type name.
-     */
-    virtual std::string const & getName() const noexcept override
-    {
-      return NAME;
-    } 
-
-
-    /**
-     * @brief Set the next row in the matrix (adjacecny list in the graph).
-     *
-     * @param numNonZeros The number of non-zeros in the row (output).
-     * @param columns The column of each non-zero entry (must be of length at
-     * least the number of non-zero entries).
-     * @param values The value of each non-zero entry (must be null or of 
-     * length at least the number of non-zero entries).
-     *
-     * @return True if another row was found in the file.
-     */
-    virtual bool getNextRow(
-        dim_t * numNonZeros,
-        dim_t * columns,
-        val_t * values) override;
+    virtual void firstVertex();
 
 
     /**
@@ -112,16 +246,7 @@ class MetisFile :
         val_t * vertexWeights,
         dim_t * numEdges,
         dim_t * edgeDests,
-        val_t * edgeWeights) override;
-
-
-    /**
-     * @brief Set the next row in the matrix file.
-     *
-     * @param next The row to set.
-     */
-    virtual void setNextRow(
-        std::vector<matrix_entry_struct> const & next) override;
+        val_t * edgeWeights);
 
 
     /**
@@ -132,55 +257,7 @@ class MetisFile :
      */
     virtual void setNextVertex(
         std::vector<val_t> const & vwgts,
-        std::vector<matrix_entry_struct> const & list) override;
-
-
-  protected:
-    /**
-     * @brief Determine if teh given line is a comment.
-     *
-     * @param line The line.
-     *
-     * @return True if the line is a comment.
-     */
-    virtual bool isComment(
-        std::string const & line) const noexcept override;
-
-
-    /**
-     * @brief Read the header of this matrix file. Populates internal fields
-     * with the header information.
-     */
-    virtual void readHeader() override;
-
-
-    /**
-     * @brief Write the header of this matrix file. The header consists of
-     * internal fields set by "setInfo()".
-     */
-    virtual void writeHeader() override; 
-
-
-  private:
-    /**
-     * @brief Name of this filetype.
-     */
-    static std::string const NAME;
-
-
-    /**
-     * @brief Line buffer.
-     */
-    std::string m_line;
-
-
-    /**
-     * @brief Get the flags representing the weights associated with this
-     * graph.
-     *
-     * @return 
-     */
-    int getWeightFlags();
+        std::vector<matrix_entry_struct> const & list);
 
 
 

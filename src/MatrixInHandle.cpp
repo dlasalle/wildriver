@@ -11,7 +11,7 @@
 
 
 #include "MatrixInHandle.hpp"
-#include "MatrixFactory.hpp"
+#include "MatrixReaderFactory.hpp"
 
 
 
@@ -27,7 +27,7 @@ namespace WildRiver
 
 MatrixInHandle::MatrixInHandle(
     std::string const & name) :
-  m_reader(MatrixFactory::make(name))
+  m_reader(MatrixReaderFactory::make(name))
   
 {
   // do nothing

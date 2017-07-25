@@ -1,16 +1,16 @@
 /**
- * @file MatrixFile.cpp
- * @brief Implementation of the base abstract class for matrix files. 
+ * @file GraphMatrixReader.cpp
+ * @brief Implementation of GraphMatrixReader.
  * @author Dominique LaSalle <wildriver@domnet.org>
  * Copyright 2015-2016
  * @version 1
- * @date 2015-02-05
+ *
  */
 
 
 
 
-#include "MatrixFile.hpp"
+#include "GraphMatrixReader.hpp"
 
 
 
@@ -24,15 +24,15 @@ namespace WildRiver
 ******************************************************************************/
 
 
-MatrixFile::MatrixFile() :
-  m_nnz(NULL_IND),
-  m_infoSet(false)
+GraphMatrixReader::GraphMatrixReader(
+    std::unique_ptr<IGraphReader>& reader) :
+  m_reader(std::move(reader))
 {
   // do nothing
 }
 
 
-MatrixFile::~MatrixFile()
+GraphMatrixReader::~GraphMatrixReader()
 {
   // do nothing
 }
@@ -45,37 +45,26 @@ MatrixFile::~MatrixFile()
 ******************************************************************************/
 
 
-void MatrixFile::getInfo(
+void GraphMatrixReader::getInfo(
     dim_t & nrows,
     dim_t & ncols,
     ind_t & nnz)
 {
-  // see if need to read the header
-  if (!m_infoSet) {
-    readHeader();
-  }
+  int nvwgt;
+  bool ewgts;
+  m_reader->getInfo(nrows, nnz, nvwgt, ewgts);
 
-  // set values
-  nrows = getNumRows();
-  ncols = getNumCols();
-  nnz = getNNZ();
-
-  m_infoSet = true;
+  ncols = nrows;
 }
 
 
-void MatrixFile::setInfo(
-    dim_t const nrows,
-    dim_t const ncols,
-    ind_t const nnz)
+void GraphMatrixReader::read(
+    ind_t * const rowptr,
+    dim_t * const rowind,
+    val_t * const rowval,
+    double * progress)
 {
-  setNumRows(nrows);
-  setNumCols(ncols);
-  setNNZ(nnz);
-
-  m_infoSet = true;
-
-  writeHeader();
+  m_reader->read(rowptr, rowind, nullptr, rowval, progress);
 }
 
 

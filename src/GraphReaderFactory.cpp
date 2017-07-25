@@ -9,11 +9,11 @@
 
 
 
-#include "GraphFactory.hpp"
+#include "GraphReaderFactory.hpp"
 #include "MetisFile.hpp"
 #include "CSRFile.hpp"
-#include "MatrixGraphFile.hpp"
-#include "MatrixFactory.hpp"
+#include "MatrixReaderFactory.hpp"
+#include "MatrixGraphReader.hpp"
 
 
 
@@ -27,17 +27,17 @@ namespace WildRiver
 ******************************************************************************/
 
 
-std::unique_ptr<IGraphFile> GraphFactory::make(
+std::unique_ptr<IGraphReader> GraphReaderFactory::make(
     std::string const & name)
 {
-  std::unique_ptr<IGraphFile> file;
+  std::unique_ptr<IGraphReader> file;
   // determine what type of reader to instantiate based on extension
   if (MetisFile::hasExtension(name)) {
     file.reset(new MetisFile(name));
   } else {
     // need to wrap it with an adapter
-    std::unique_ptr<IMatrixFile> matPtr(MatrixFactory::make(name));
-    file.reset(new MatrixGraphFile(matPtr));
+    std::unique_ptr<IMatrixReader> matPtr(MatrixReaderFactory::make(name));
+    file.reset(new MatrixGraphReader(matPtr));
   }
  
   return file;

@@ -22,8 +22,6 @@
 
 
 #include "base.h"
-#include "MatrixEntry.hpp"
-#include "Exception.hpp"
 
 
 
@@ -34,18 +32,13 @@ namespace WildRiver
 
 class IGraphWriter
 {
-  private:
-
-
-  protected:
-
-
   public:
     /**
      * @brief Destructor.
      */
     virtual ~IGraphWriter()
     {
+      // do nothing
     }
 
 
@@ -80,26 +73,11 @@ class IGraphWriter
         bool ewgts) = 0;
 
 
-    /**
-     * @brief Set the adjacency list and vertex weight of the next vertex.
-     *
-     * @param vwgts The vertex weights for this vertex.
-     * @param list The adjacecny list.
-     */
-    virtual void setNextVertex(
-        std::vector<val_t> const & vwgts,
-        std::vector<matrix_entry_struct> const & list) = 0;
-
-
-    /**
-     * @brief Get the name of this filetype.
-     *
-     * @return The name of this filetype.
-     */
-    virtual std::string const & getName() const = 0;
 
 
 };
+
+
 
 
 }

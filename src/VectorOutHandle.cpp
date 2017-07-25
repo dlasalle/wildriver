@@ -11,7 +11,7 @@
 
 
 #include "VectorOutHandle.hpp"
-#include "VectorFactory.hpp"
+#include "VectorWriterFactory.hpp"
 
 
 
@@ -27,7 +27,7 @@ namespace WildRiver
 
 VectorOutHandle::VectorOutHandle(
     std::string const & name) :
-  m_writer(VectorFactory::make(name))
+  m_writer(VectorWriterFactory::make(name))
 {
   // do nothing
 }

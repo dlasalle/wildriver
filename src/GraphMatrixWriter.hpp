@@ -1,46 +1,52 @@
 /**
- * @file IMatrixWriter.hpp
- * @brief Interface for writing out sparse matrices.
- * @author Dominique LaSalle <wildriver@domnet.org>
- * Copyright 2015-2016
- * @version 1
- * @date 2015-09-02
- */
+* @file GraphMatrixWriter.hpp
+* @brief Adapter for writing graphs as matrices.
+* @author Dominique LaSalle <dominique@solidlake.com>
+* Copyright 2017, Solid Lake LLC
+* @version 1
+* @date 2017-07-24
+*/
 
 
 
 
-#ifndef WILDRIVER_IMATRIXWRITER_HPP
-#define WILDRIVER_IMATRIXWRITER_HPP
+#ifndef WILDRIVER_GRAPHMATRIXWRITER_HPP
+#define WILDRIVER_GRAPHMATRIXWRITER_HPP
 
 
 
 
-#include <string>
 #include <vector>
-#include <stdexcept>
+#include <string>
+#include <memory>
 
-#include "base.h"
-#include "MatrixEntry.hpp"
-#include "Exception.hpp"
-
-
+#include "IGraphWriter.hpp"
+#include "IMatrixWriter.hpp"
 
 
-namespace WildRiver 
+
+
+namespace WildRiver
 {
 
 
-class IMatrixWriter
+class GraphMatrixWriter :
+    public IMatrixWriter
 {
   public:
     /**
-     * @brief Virtual destructor.
-     */
-    virtual ~IMatrixWriter() 
-    {
-      // do nothing
-    }
+    * @brief Create an adapter.
+    *
+    * @param writer The writer to adapt.
+    */
+    GraphMatrixWriter(
+        std::unique_ptr<IGraphWriter>& writer);
+
+
+    /**
+    * @brief Destructor.
+    */
+    virtual ~GraphMatrixWriter();
 
 
     /**
@@ -53,7 +59,7 @@ class IMatrixWriter
     virtual void setInfo(
         dim_t nrows,
         dim_t ncols,
-        ind_t nnz) = 0;
+        ind_t nnz) override;
 
 
     /**
@@ -68,10 +74,20 @@ class IMatrixWriter
     virtual void write(
         ind_t const * rowptr,
         dim_t const * rowind,
-        val_t const * rowval) = 0;
+        val_t const * rowval) override;
+
+
+
+
+  private:
+    std::unique_ptr<IGraphWriter> m_writer;
+
+
 
 
 };
+
+
 
 
 }

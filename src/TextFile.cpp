@@ -34,7 +34,7 @@ enum {
 
 
 /******************************************************************************
-* PROTECTED FUNCTIONS *********************************************************
+* PUBLIC STATIC FUNCTIONS *****************************************************
 ******************************************************************************/
 
 
@@ -52,6 +52,36 @@ bool TextFile::matchExtension(
 
   return false;
 }
+
+
+
+/******************************************************************************
+* CONSTRUCTORS / DESTRUCTOR ***************************************************
+******************************************************************************/
+
+
+TextFile::TextFile(
+    std::string const & name) :
+  m_state(FILE_STATE_UNOPENED),
+  m_currentLine(0),
+  m_name(name),
+  m_stream()
+{
+  // do nothing
+}
+
+
+TextFile::~TextFile()
+{
+  m_stream.close();
+}
+
+
+
+
+/******************************************************************************
+* PUBLIC FUNCTIONS ************************************************************
+******************************************************************************/
 
 
 void TextFile::openWrite()
@@ -102,37 +132,6 @@ bool TextFile::isOpenRead() const
 }
 
 
-
-
-/******************************************************************************
-* CONSTRUCTORS / DESTRUCTOR ***************************************************
-******************************************************************************/
-
-
-TextFile::TextFile(
-    std::string const & name) :
-  m_state(FILE_STATE_UNOPENED),
-  m_currentLine(0),
-  m_name(name),
-  m_stream()
-{
-  // do nothing
-}
-
-
-TextFile::~TextFile()
-{
-  m_stream.close();
-}
-
-
-
-
-/******************************************************************************
-* PUBLIC FUNCTIONS ************************************************************
-******************************************************************************/
-
-
 void TextFile::resetStream()
 {
   m_stream.clear();
@@ -155,18 +154,11 @@ bool TextFile::nextLine(
 }
 
 
-bool TextFile::nextNoncommentLine(
-    std::string & line)
+void TextFile::setNextLine(
+    std::string const & line)
 {
-  do {
-    if (!nextLine(line)) { 
-      return false;
-    }
-  } while (isComment(line));
-
-  return true;
+  m_stream << line << "\n";
 }
-
 
 
 

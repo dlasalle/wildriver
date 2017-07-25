@@ -17,7 +17,6 @@
 
 
 #include "IDenseMatrixFile.hpp"
-#include "Matrix.hpp"
 
 
 
@@ -27,8 +26,7 @@ namespace WildRiver
 
 
 class DenseMatrixFile :
-  public Matrix,
-  public IDenseMatrixFile
+    public IDenseMatrixFile
 {
   public:
     /**

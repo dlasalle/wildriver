@@ -77,15 +77,6 @@ class GraphOutHandle
         bool ewgts);
 
 
-    /**
-     * @brief Set the adjacency list and vertex weight of the next vertex.
-     *
-     * @param vwgts The vertex weights for this vertex.
-     * @param list The adjacecny list.
-     */
-    void setNextVertex(
-        std::vector<val_t> const & vwgts,
-        std::vector<matrix_entry_struct> const & list);
 
 
   private:
@@ -105,6 +96,8 @@ class GraphOutHandle
 
 
 };
+
+
 
 
 }

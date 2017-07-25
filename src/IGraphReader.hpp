@@ -22,8 +22,6 @@
 
 
 #include "base.h"
-#include "MatrixEntry.hpp"
-#include "Exception.hpp"
 
 
 
@@ -34,18 +32,13 @@ namespace WildRiver
 
 class IGraphReader
 {
-  private:
-
-
-  protected:
-
-
   public:
     /**
      * @brief Destructor.
      */
     virtual ~IGraphReader() 
     {
+      // do nothing
     }
 
 
@@ -86,38 +79,6 @@ class IGraphReader
         bool & ewgts) = 0;
 
 
-    /**
-     * @brief Set the cursor to the first vertex in the file.
-     */
-    virtual void firstVertex() = 0;
-
-
-    /**
-     * @brief Get the information of the next vertex.
-     *
-     * @param vertexWeights The vertex weight(s) (must be null or at least of
-     * length equal to the number of constraints).
-     * @param numEdges The number of edges incident to this vertex (output).
-     * @param edgeDests The destination of each edge leaving this vertex (must
-     * be of length equal to the number of edges of the vertex).
-     * @param edgeWeights The weight of each edge leaving this vertex (must
-     * null or be of length equal to the number of edges of the vertex).
-     *
-     * @return True if another vertex was found in the file.
-     */
-    virtual bool getNextVertex(
-        val_t * vertexWeights,
-        dim_t * numEdges,
-        dim_t * edgeDests,
-        val_t * edgeWeights) = 0;
-
-
-    /**
-     * @brief Get the name of the filetype.
-     *
-     * @return The name of the filetype.
-     */
-    virtual std::string const & getName() const = 0;
 
 
 };
