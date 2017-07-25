@@ -17,7 +17,12 @@
 
 
 
-#include "VectorTextFile.hpp"
+#include <string>
+
+
+#include "IVectorReader.hpp"
+#include "IVectorWriter.hpp"
+#include "TextFile.hpp"
 
 
 
