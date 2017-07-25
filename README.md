@@ -12,8 +12,5 @@ Full documentation of the API is available at https://wildriver.readthedocs.io.
 Examples
 --------
 
-
-```c
-```
-
+See the `examples/` directory for usage.
 
