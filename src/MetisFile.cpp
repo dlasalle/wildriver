@@ -16,7 +16,7 @@
 
 
 
-namespace WildRiver 
+namespace WildRiver
 {
 
 
@@ -126,9 +126,13 @@ void MetisFile::readHeader()
   m_numEdges = std::stoull(line,&offset,10)*2;
   line = line.substr(offset);
 
+  // default weight information uncase its not preset
+  m_hasEdgeWeights = false;
+  m_numVertexWeights = 0;
+
   // handle weights
   if (line.find_first_not_of(" \t") != std::string::npos) {
-    int flags = std::stoul(line,&offset,10);  
+    int flags = std::stoul(line, &offset, 10);
     line = line.substr(offset);
 
     if (flags & HAS_EDGEWEIGHTS) {
@@ -136,7 +140,7 @@ void MetisFile::readHeader()
     }
 
     if (flags & HAS_VERTEXWEIGHTS) {
-      m_numVertexWeights = std::stoul(line,&offset,10);
+      m_numVertexWeights = std::stoul(line, &offset, 10);
     }
   }
 }
@@ -160,7 +164,7 @@ void MetisFile::writeHeader()
   // write the header -- edges in metis files are undirected (symmetric).
   stream << m_numVertices << " " << (m_numEdges/2);
 
-  int weightflag = getWeightFlags();  
+  int weightflag = getWeightFlags();
 
   if (weightflag != HAS_NOWEIGHTS) {
     // write weight flags
@@ -169,9 +173,9 @@ void MetisFile::writeHeader()
       // write number of vertex weights
       stream << " " << m_numVertexWeights;
     }
-  } 
+  }
 
-  m_file.setNextLine(stream.str()); 
+  m_file.setNextLine(stream.str());
 }
 
 
@@ -249,7 +253,7 @@ bool MetisFile::getNextVertex(
         edgeWeights[degree] = static_cast<val_t>(1);
       }
     }
-    
+
     ++degree;
   }
 
@@ -264,7 +268,7 @@ void MetisFile::setNextVertex(
     std::vector<val_t> const & vwgts,
     std::vector<matrix_entry_struct> const & list)
 {
-  dim_t const ncon = m_numVertexWeights; 
+  dim_t const ncon = m_numVertexWeights;
   dim_t const nadj = list.size();
 
   std::stringstream stream;
@@ -291,7 +295,6 @@ void MetisFile::setNextVertex(
       stream << " ";
     }
   }
-  stream << std::endl;
 
   m_file.setNextLine(stream.str());
 
@@ -320,7 +323,7 @@ bool MetisFile::nextNoncommentLine(
 
 
 MetisFile::MetisFile(
-    std::string const & fname) : 
+    std::string const & fname) :
   m_infoSet(false),
   m_numVertices(NULL_DIM),
   m_numEdges(NULL_IND),
