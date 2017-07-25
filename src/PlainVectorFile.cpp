@@ -10,6 +10,8 @@
 
 
 
+#include <typeinfo>
+
 
 #include "PlainVectorFile.hpp"
 
