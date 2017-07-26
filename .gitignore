@@ -3,4 +3,5 @@ Makefile
 *.o
 *.a
 doc/html
+doc/src
 build
