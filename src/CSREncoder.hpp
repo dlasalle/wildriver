@@ -98,7 +98,7 @@ class CSREncoder
     /**
      * @brief The writer to set the matrix row by row.
      */
-    std::unique_ptr<IRowMatrixWriter> m_writer;
+    IRowMatrixWriter * m_writer;
 
 
 

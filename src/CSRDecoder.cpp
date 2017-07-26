@@ -51,7 +51,7 @@ void CSRDecoder::getInfo(
 {
   // see if need to read the header
   if (!m_infoSet) {
-    m_reader->readHeader(nrows, ncols, nnz);
+    m_reader->readHeader(m_numRows, m_numCols, m_nnz);
   }
 
   // set values

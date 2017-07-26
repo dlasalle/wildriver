@@ -64,7 +64,7 @@ void CSREncoder::setInfo(
 
   m_infoSet = true;
 
-  m_writer->writeHeader(nrows, ncols, nnz);
+  m_writer->writeHeader(m_numRows, m_numCols, m_nnz);
 }
 
 
