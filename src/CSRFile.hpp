@@ -26,7 +26,7 @@
 namespace WildRiver {
 
 
-class CSRFile : 
+class CSRFile :
   public IMatrixReader,
   public IMatrixWriter
 {
@@ -38,7 +38,7 @@ class CSRFile :
 
 
     /**
-     * @brief Check if the given filename matches an extension for this 
+     * @brief Check if the given filename matches an extension for this
      * filetype.
      *
      * @param f The filename.
@@ -92,7 +92,7 @@ class CSRFile :
 
     /**
      * @brief Get the sparse matrix in CSR form. The pointers must be
-     * pre-allocated to the sizes required by the info of the matrix 
+     * pre-allocated to the sizes required by the info of the matrix
      *
      * |rowptr| = nrows + 1
      * |rowind| = nnz
@@ -129,36 +129,6 @@ class CSRFile :
 
   private:
     /**
-    * @brief Whether or not the matrix information has been set.
-    */
-    bool m_infoSet;
-
-
-    /**
-     * @brief The number of rows in the matrix.
-     */
-    dim_t m_numRows;
-
-
-    /**
-     * @brief The number of columns in the matrix.
-     */
-    dim_t m_numCols;
-
-
-    /**
-     * @brief The number of non-zeros in the matrix.
-     */
-    ind_t m_nnz;
-
-
-    /**
-    * @brief The current row being processed.
-    */
-    dim_t m_currentRow;
-
-
-    /**
      * @brief A buffer for reading each line.
      */
     std::string m_line;
@@ -182,18 +152,12 @@ class CSRFile :
 
 
     /**
-     * @brief Reset the current position in the matrix file to the first row.
-     */
-    void firstRow();
-
-
-    /**
      * @brief Get the next row in the matrix (adjacecny list in the graph).
      *
      * @param numNonZeros The number of non-zeros in the row (output).
      * @param columns The column of each non-zero entry (must be of length at
      * least the number of non-zero entries).
-     * @param values The value of each non-zero entry (must be null or of 
+     * @param values The value of each non-zero entry (must be null or of
      * length at least the number of non-zero entries).
      *
      * @return True if another row was found in the file.
@@ -224,21 +188,7 @@ class CSRFile :
      * @brief Write the header of this matrix file. The header consists of
      * internal fields set by "setInfo()".
      */
-    void writeHeader(); 
-
-
-    /**
-     * @brief Determine the given line is a comment.
-     *
-     * @param line The line.
-     *
-     * @return True if the line is a comment.
-     */
-    bool isComment(
-        std::string const & line) const noexcept;
-
-
-
+    void writeHeader();
 
 
 

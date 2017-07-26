@@ -43,6 +43,35 @@ std::string const CSRFile::NAME = "CSR";
 
 
 /******************************************************************************
+* HELPER FUNCTIONS ************************************************************
+******************************************************************************/
+
+
+namespace
+{
+
+/**
+* @brief Determine the given line is a comment.
+*
+* @param line The line.
+*
+* @return True if the line is a comment.
+*/
+bool isComment(
+    std::string const & line) noexcept
+{
+  return line.size() > 0 && line[0] == '#';
+}
+
+
+
+
+}
+
+
+
+
+/******************************************************************************
 * PUBLIC STATIC FUNCTIONS *****************************************************
 ******************************************************************************/
 
@@ -78,28 +107,13 @@ bool CSRFile::nextNoncommentLine(
 }
 
 
-bool CSRFile::isComment(
-    std::string const & line) const noexcept
-{
-  // awful solution since I can't declare this statically in c++ -- at
-  // somepoint generate all 256 entries
-  bool comment_chars[256] = {false};
-  comment_chars['#'] = true;
-  comment_chars['%'] = true;
-  comment_chars['"'] = true;
-  comment_chars['/'] = true;
-
-  return line.size() > 0 && comment_chars[static_cast<uint8_t>(line[0])];
-}
-
-
 void CSRFile::readHeader()
 {
   // open our file for reading
   m_file.openRead();
 
   // go to the start of the file
-  firstRow();
+  m_file.resetStream();
 
   m_numRows = 0;
   m_numCols = 0;
@@ -137,7 +151,7 @@ void CSRFile::readHeader()
   }
 
   // go back to the start
-  firstRow();
+  m_file.resetStream();
 }
 
 
@@ -145,14 +159,6 @@ void CSRFile::writeHeader()
 {
   // open for writing
   m_file.openWrite();
-}
-
-
-void CSRFile::firstRow()
-{
-  // go to the start of the file
-  m_file.resetStream();
-  m_currentRow = 0; 
 }
 
 
@@ -311,6 +317,8 @@ void CSRFile::read(
 
   dim_t const interval = m_numRows > 100 ? m_numRows / 100 : 1;
   double const increment = 1.0/100.0;
+
+  m_currentRow = 0; 
 
   // read in the rows the matrix into our csr
   dim_t j = 0;
