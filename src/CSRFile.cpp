@@ -249,16 +249,6 @@ void CSRFile::readHeader(
 }
 
 
-void CSRFile::writeHeader(
-    dim_t,
-    dim_t,
-    ind_t)
-{
-  // open for writing
-  m_file.openWrite();
-}
-
-
 void CSRFile::getNextRow(
     dim_t * const numNonZeros,
     dim_t * const columns,
@@ -302,6 +292,16 @@ void CSRFile::getNextRow(
   }
 
   *numNonZeros = degree;
+}
+
+
+void CSRFile::writeHeader(
+    dim_t,
+    dim_t,
+    ind_t)
+{
+  // open for writing
+  m_file.openWrite();
 }
 
 
