@@ -20,8 +20,6 @@
 #include <vector>
 
 #include "base.h"
-#include "MatrixEntry.hpp"
-#include "Exception.hpp"
 
 
 

@@ -11,6 +11,7 @@
 
 
 #include "GraphMatrixWriter.hpp"
+#include "Exception.hpp"
 
 
 

@@ -10,9 +10,13 @@
 
 
 
-#include <sstream>
 #include <cstddef>
 #include <cassert>
+
+
+#include <sstream>
+
+
 #include "CSRFile.hpp"
 
 
@@ -49,6 +53,7 @@ std::string const CSRFile::NAME = "CSR";
 
 namespace
 {
+
 
 /**
 * @brief Determine the given line is a comment.
@@ -107,6 +112,92 @@ bool CSRFile::nextNoncommentLine(
 }
 
 
+
+
+/******************************************************************************
+* CONSTRUCTORS / DESTRUCTORS **************************************************
+******************************************************************************/
+
+
+CSRFile::CSRFile(
+    std::string const & fname) :
+  m_line(BUFFER_SIZE,'\0'),
+  m_file(fname),
+  m_decoder(nullptr),
+  m_encoder(nullptr)
+{
+  // do nothing
+}
+
+
+CSRFile::~CSRFile()
+{
+  // do nothing
+}
+
+
+
+
+/******************************************************************************
+* PUBLIC FUNCTIONS ************************************************************
+******************************************************************************/
+
+
+void CSRFile::getInfo(
+    dim_t & nrows,
+    dim_t & ncols,
+    ind_t & nnz)
+{
+  if (m_decoder.get() == nullptr) {
+    // make our decoder if we haven't yet
+    m_decoder.reset(new CSRDecoder(this));
+  }
+
+  m_decoder->getInfo(nrows, ncols, nnz);
+}
+
+
+void CSRFile::read(
+    ind_t * const rowptr,
+    dim_t * const rowind,
+    val_t * const rowval,
+    double * progress)
+{
+  if (m_decoder.get() == nullptr) {
+    throw UnsetInfoException("Cannot call read() before calling getInfo()");
+  }
+
+  m_decoder->read(rowptr, rowind, rowval, progress);
+}
+
+
+void CSRFile::setInfo(
+    dim_t const nrows,
+    dim_t const ncols,
+    ind_t const nnz)
+{
+  if (m_encoder.get() == nullptr) {
+    // make our encoder if we haven't yet
+    m_encoder.reset(new CSREncoder(this));
+  }
+
+  m_encoder->setInfo(nrows, ncols, nnz);
+}
+
+
+void CSRFile::write(
+    ind_t const * const rowptr,
+    dim_t const * const rowind,
+    val_t const * const rowval)
+{
+  if (m_encoder.get() == nullptr) {
+    throw UnsetInfoException("Cannot call write() before calling setInfo()");
+  }
+
+  m_encoder->write(rowptr, rowind, rowval);
+}
+
+
 void CSRFile::readHeader(
     dim_t & numRows,
     dim_t & numCols,
@@ -138,8 +229,8 @@ void CSRFile::readHeader(
         break;
       }
 
-      if (col > m_numCols) {
-        m_numCols = col;
+      if (col > numCols) {
+        numCols = col;
       }
 
       // skip value without converting
@@ -149,8 +240,8 @@ void CSRFile::readHeader(
       ++degree;
     }
 
-    m_nnz += degree;
-    ++m_numRows;
+    nnz += degree;
+    ++numRows;
   }
 
   // go back to the start
@@ -158,20 +249,24 @@ void CSRFile::readHeader(
 }
 
 
-void CSRFile::writeHeader()
+void CSRFile::writeHeader(
+    dim_t,
+    dim_t,
+    ind_t)
 {
   // open for writing
   m_file.openWrite();
 }
 
 
-bool CSRFile::getNextRow(
+void CSRFile::getNextRow(
     dim_t * const numNonZeros,
     dim_t * const columns,
     val_t * const values)
 {
   if (!nextNoncommentLine(m_line)) {
-    return false;
+    throw BadFileException(std::string("Unexcepted end of file at line") + \
+        std::to_string(m_file.getCurrentLine()));
   }
 
   // TOOD: don't cast constness away
@@ -206,178 +301,25 @@ bool CSRFile::getNextRow(
     ++degree;
   }
 
-  ++m_currentRow;
-
   *numNonZeros = degree;
-
-  return true;
 }
 
 
 void CSRFile::setNextRow(
-    std::vector<matrix_entry_struct> const & next)
+    dim_t numNonZeros,
+    dim_t const * const columns,
+    val_t const * const values)
 {
-  size_t const size = next.size();
   std::stringstream streamBuffer;
-  if (size > 0) {
-    for (size_t i=0; i<size-1; ++i) {
-      matrix_entry_struct const & e = next[i];
-      streamBuffer << (e.ind+1) << " " << e.val << " ";
+  if (numNonZeros > 0) {
+    const size_t last = numNonZeros - 1;
+    for (size_t i = 0; i < last; ++i) {
+      streamBuffer << (columns[i]+1) << " " << values[i] << " ";
     }
-    matrix_entry_struct const & e = next.back();
-    streamBuffer << (e.ind+1) << " " << e.val;
+    streamBuffer << (columns[last]+1) << " " << values[last];
   }
 
   m_file.setNextLine(streamBuffer.str());
-
-  ++m_currentRow;
-}
-
-
-
-
-/******************************************************************************
-* CONSTRUCTORS / DESTRUCTORS **************************************************
-******************************************************************************/
-
-
-CSRFile::CSRFile(
-    std::string const & fname) :
-  m_infoSet(false),
-  m_numRows(NULL_DIM),
-  m_numCols(NULL_DIM),
-  m_nnz(NULL_IND),
-  m_currentRow(0),
-  m_line(BUFFER_SIZE,'\0'),
-  m_file(fname)
-{
-  // do nothing
-}
-
-
-CSRFile::~CSRFile()
-{
-  // do nothing
-}
-
-
-
-
-/******************************************************************************
-* PUBLIC FUNCTIONS ************************************************************
-******************************************************************************/
-
-
-void CSRFile::getInfo(
-    dim_t & nrows,
-    dim_t & ncols,
-    ind_t & nnz)
-{
-  // see if need to read the header
-  if (!m_infoSet) {
-    readHeader();
-  }
-
-  assert(m_numRows != NULL_DIM); 
-  assert(m_numCols != NULL_DIM); 
-  assert(m_nnz != NULL_IND);
-
-  // set values
-  nrows = m_numRows;
-  ncols = m_numCols;
-  nnz = m_nnz;
-
-  m_infoSet = true;
-}
-
-
-void CSRFile::setInfo(
-    dim_t const nrows,
-    dim_t const ncols,
-    ind_t const nnz)
-{
-	m_numRows = nrows;
-  m_numCols = ncols;
-  m_nnz = nnz;
-
-  assert(m_numRows != NULL_DIM); 
-  assert(m_numCols != NULL_DIM); 
-  assert(m_nnz != NULL_IND);
-
-  m_infoSet = true;
-
-  writeHeader();
-}
-
-
-void CSRFile::read(
-    ind_t * const rowptr,
-    dim_t * const rowind,
-    val_t * const rowval,
-    double * const progress)
-{
-  std::vector<matrix_entry_struct> row;
-
-  dim_t const interval = m_numRows > 100 ? m_numRows / 100 : 1;
-  double const increment = 1.0/100.0;
-
-  m_currentRow = 0; 
-
-  // read in the rows the matrix into our csr
-  dim_t j = 0;
-  rowptr[0] = j;
-  for (dim_t i = 0; i < m_numRows; ++i) {
-    dim_t degree;
-
-    dim_t * const rowindStart = rowind+rowptr[i];
-    val_t * const rowvalStart = rowval ? rowval+rowptr[i] : nullptr;
-
-    if (!getNextRow(&degree,rowindStart,rowvalStart)) {
-      // fewer rows than expected
-      throw EOFException(std::string("Failed to read row ") + \
-          std::to_string(i) + std::string("/") + std::to_string(m_numRows)); 
-    }
-
-    rowptr[i+1] = rowptr[i]+degree;
-
-    if (progress != nullptr && i % interval == 0) {
-      *progress += increment;
-    }
-  }
-
-  if (rowptr[m_numRows] != m_nnz) {
-    // we read in the wrong number of non-zeroes
-    throw EOFException(std::string("Only found ") + std::to_string(j) + \
-        std::string("/") + std::to_string(m_nnz) + \
-        std::string(" non-zeroes in file"));
-  }
-}
-
-
-void CSRFile::write(
-    ind_t const * const rowptr,
-    dim_t const * const rowind,
-    val_t const * const rowval)
-{
-  std::vector<matrix_entry_struct> row;
-
-
-  for (dim_t i = 0; i < m_numRows; ++i) {
-    // build and insert a new row
-    row.clear();
-    for (ind_t j=rowptr[i];j<rowptr[i+1];++j) {
-      matrix_entry_struct entry;
-
-      entry.ind = rowind[j];
-      if (rowval) {
-        entry.val = rowval[j];
-      } else {
-        entry.val = 1;
-      }
-      row.push_back(entry);
-    }
-    setNextRow(row);
-  }
 }
 
 

@@ -1,5 +1,5 @@
 /**
-* @file CSRParser.hpp
+* @file CSRDecoder.hpp
 * @brief A class for reading in a matrix into a CSR structure.
 * @author Dominique LaSalle <dominique@solidlake.com>
 * Copyright 2017
@@ -10,8 +10,8 @@
 
 
 
-#ifndef WILDRIVER_CSRPARSER_HPP
-#define WILDRIVER_CSRPARSER_HPP
+#ifndef WILDRIVER_CSRDECODER_HPP
+#define WILDRIVER_CSRDECODER_HPP
 
 
 
@@ -25,15 +25,15 @@ namespace WildRiver
 {
 
 
-class CSRParser
+class CSRDecoder
 {
   public:
     /**
-    * @brief Create a new CSRParser.
+    * @brief Create a new CSRDecoder.
     *
     * @param reader The reader to use.
     */
-    CSRParser(
+    CSRDecoder(
       IRowMatrixReader * reader);
 
 
@@ -95,12 +95,6 @@ class CSRParser
      * @brief The number of non-zeros in the matrix.
      */
     ind_t m_nnz;
-
-
-    /**
-    * @brief The current row being processed.
-    */
-    dim_t m_currentRow;
 
 
     /**

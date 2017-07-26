@@ -16,6 +16,12 @@
 
 
 
+
+#include "base.h"
+
+
+
+
 namespace WildRiver
 {
 
@@ -31,6 +37,7 @@ class IRowMatrixWriter
       // do nothing
     }
 
+
     /**
      * @brief Write the header of this matrix file. The header consists of
      * internal fields set by "setInfo()".
@@ -44,15 +51,19 @@ class IRowMatrixWriter
     /**
      * @brief Set the next row in the matrix file.
      *
-     * @param next The row to set.
+     * @param numNonZeros The number of non-zeros in the row.
+     * @param columns The column IDs.
+     * @param values The values.
      */
     virtual void setNextRow(
-        std::vector<matrix_entry_struct> const & next) = 0;
+        dim_t numNonZeros,
+        dim_t const * columns,
+        val_t const * values) = 0;
 
 
 
 
-}
+};
 
 
 

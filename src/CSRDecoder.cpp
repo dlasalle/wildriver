@@ -1,6 +1,6 @@
 /**
-* @file CSRParser.cpp
-* @brief Implementation of CSRParser class.
+* @file CSRDecoder.cpp
+* @brief Implementation of CSRDecoder class.
 * @author Dominique LaSalle <dominique@solidlake.com>
 * Copyright 2017, Solid Lake LLC
 * @version 1
@@ -10,7 +10,8 @@
 
 
 
-#include "CSRParser.hpp"
+#include "CSRDecoder.hpp"
+#include "Exception.hpp"
 
 
 
@@ -24,13 +25,12 @@ namespace WildRiver
 ******************************************************************************/
 
 
-CSRParser::CSRParser(
-    IRowWiseMatrixReader * reader) :
+CSRDecoder::CSRDecoder(
+    IRowMatrixReader * const reader) :
   m_infoSet(false),
   m_numRows(NULL_DIM),
   m_numCols(NULL_DIM),
   m_nnz(NULL_IND),
-  m_currentRow(0),
   m_reader(reader)
 {
   // do nothing
@@ -44,14 +44,14 @@ CSRParser::CSRParser(
 ******************************************************************************/
 
 
-void CSRParser::getInfo(
+void CSRDecoder::getInfo(
     dim_t & nrows,
     dim_t & ncols,
     ind_t & nnz)
 {
   // see if need to read the header
   if (!m_infoSet) {
-    m_reader->readHeader();
+    m_reader->readHeader(nrows, ncols, nnz);
   }
 
   // set values
@@ -63,18 +63,14 @@ void CSRParser::getInfo(
 }
 
 
-void CSRParser::read(
+void CSRDecoder::read(
     ind_t * rowptr,
     dim_t * rowind,
     val_t * rowval,
     double * progress)
 {
-  std::vector<matrix_entry_struct> row;
-
   dim_t const interval = m_numRows > 100 ? m_numRows / 100 : 1;
   double const increment = 1.0/100.0;
-
-  dim_t currentRow = 0; 
 
   // read in the rows the matrix into our csr
   dim_t j = 0;
@@ -85,11 +81,7 @@ void CSRParser::read(
     dim_t * const rowindStart = rowind+rowptr[i];
     val_t * const rowvalStart = rowval ? rowval+rowptr[i] : nullptr;
 
-    if (!m_reader->getNextRow(&degree,rowindStart,rowvalStart)) {
-      // fewer rows than expected
-      throw EOFException(std::string("Failed to read row ") + \
-          std::to_string(i) + std::string("/") + std::to_string(m_numRows)); 
-    }
+    m_reader->getNextRow(&degree, rowindStart, rowvalStart);
 
     rowptr[i+1] = rowptr[i]+degree;
 

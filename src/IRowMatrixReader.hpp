@@ -16,6 +16,11 @@
 
 
 
+#include "base.h"
+
+
+
+
 namespace WildRiver
 {
 
@@ -26,7 +31,7 @@ class IRowMatrixReader
     /**
     * @brief Destructor.
     */
-    virtual ~IRowMatrixReader
+    virtual ~IRowMatrixReader()
     {
       // do nothing
     }
@@ -36,10 +41,10 @@ class IRowMatrixReader
      * @brief Read the header of this matrix file. Populates internal fields
      * with the header information.
      */
-    void readHeader(
+    virtual void readHeader(
         dim_t & numRows,
         dim_t & numCols,
-        ind_t & nnz);
+        ind_t & nnz) = 0;
 
 
     /**
@@ -53,10 +58,10 @@ class IRowMatrixReader
      *
      * @return True if another row was found in the file.
      */
-    bool getNextRow(
+    virtual void getNextRow(
         dim_t * numNonZeros,
         dim_t * columns,
-        val_t * values);
+        val_t * values) = 0;
 
 
 

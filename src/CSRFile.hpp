@@ -16,11 +16,15 @@
 
 
 
+#include <memory>
+
+
 #include "IMatrixReader.hpp"
 #include "IMatrixWriter.hpp"
 #include "IRowMatrixReader.hpp"
 #include "IRowMatrixWriter.hpp"
-#include "CSRParser.hpp"
+#include "CSRDecoder.hpp"
+#include "CSREncoder.hpp"
 #include "TextFile.hpp"
 
 
@@ -136,7 +140,53 @@ class CSRFile :
      * @brief Read the header of this matrix file. Populates internal fields
      * with the header information.
      */
-    void readHeader();
+    void readHeader(
+        dim_t & numRows,
+        dim_t & numCols,
+        ind_t & nnz) override;
+
+
+    /**
+     * @brief Get the next row in the matrix (adjacecny list in the graph).
+     *
+     * @param numNonZeros The number of non-zeros in the row (output).
+     * @param columns The column of each non-zero entry (must be of length at
+     * least the number of non-zero entries).
+     * @param values The value of each non-zero entry (must be null or of
+     * length at least the number of non-zero entries).
+     *
+     * @return True if another row was found in the file.
+     */
+    void getNextRow(
+        dim_t * numNonZeros,
+        dim_t * columns,
+        val_t * values) override;
+
+
+    /**
+     * @brief Writer the header to the file (this is a no-op for CSF files).
+     *
+     * @param numRows The number of rows.
+     * @param numCols The number of columns.
+     * @param nnz The number of non-zeros.
+     */
+    void writeHeader(
+        dim_t numRows,
+        dim_t numCols,
+        ind_t nnz) override;
+
+
+    /**
+     * @brief Set the next row in the matrix file.
+     *
+     * @param numNonZeros The number of non-zeros in the row.
+     * @param columns The column IDs.
+     * @param values The values.
+     */
+    void setNextRow(
+        dim_t numNonZeros,
+        dim_t const * columns,
+        val_t const * values) override;
 
 
 
@@ -154,9 +204,15 @@ class CSRFile :
 
 
     /**
-    * @brief The row wise parser.
-    */
-    CSRParser m_parser;
+     * @brief The row wise decoder.
+     */
+    std::unique_ptr<CSRDecoder> m_decoder;
+
+
+    /**
+     * @brief The row wise encoder.
+     */
+    std::unique_ptr<CSREncoder> m_encoder;
 
 
     /**
@@ -168,32 +224,6 @@ class CSRFile :
     */
     bool nextNoncommentLine(
         std::string & line);
-
-
-    /**
-     * @brief Get the next row in the matrix (adjacecny list in the graph).
-     *
-     * @param numNonZeros The number of non-zeros in the row (output).
-     * @param columns The column of each non-zero entry (must be of length at
-     * least the number of non-zero entries).
-     * @param values The value of each non-zero entry (must be null or of
-     * length at least the number of non-zero entries).
-     *
-     * @return True if another row was found in the file.
-     */
-    bool getNextRow(
-        dim_t * numNonZeros,
-        dim_t * columns,
-        val_t * values);
-
-
-    /**
-     * @brief Set the next row in the matrix file.
-     *
-     * @param next The row to set.
-     */
-    void setNextRow(
-        std::vector<matrix_entry_struct> const & next);
 
 
 
