@@ -107,7 +107,10 @@ bool CSRFile::nextNoncommentLine(
 }
 
 
-void CSRFile::readHeader()
+void CSRFile::readHeader(
+    dim_t & numRows,
+    dim_t & numCols,
+    ind_t & nnz)
 {
   // open our file for reading
   m_file.openRead();
@@ -115,9 +118,9 @@ void CSRFile::readHeader()
   // go to the start of the file
   m_file.resetStream();
 
-  m_numRows = 0;
-  m_numCols = 0;
-  m_nnz = 0;
+  numRows = 0;
+  numCols = 0;
+  nnz = 0;
 
   while (nextNoncommentLine(m_line)) {
     char const * const lineEnd = m_line.data() + m_line.length();

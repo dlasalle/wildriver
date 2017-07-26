@@ -16,7 +16,7 @@
 
 
 
-#include "IRowWiseMatrixReader.hpp"
+#include "IRowMatrixReader.hpp"
 
 
 
@@ -34,7 +34,7 @@ class CSRParser
     * @param reader The reader to use.
     */
     CSRParser(
-      IRowWiseMatrixReader * reader);
+      IRowMatrixReader * reader);
 
 
     /**
@@ -106,7 +106,7 @@ class CSRParser
     /**
     * @brief The reader to get the matrix row by row.
     */
-    IRowWiseMatrixReader * m_reader;
+    IRowMatrixReader * m_reader;
 
 
 

@@ -20,14 +20,26 @@ namespace WildRiver
 {
 
 
-class IRowWiseMatrixReader
+class IRowMatrixReader
 {
   public:
+    /**
+    * @brief Destructor.
+    */
+    virtual ~IRowMatrixReader
+    {
+      // do nothing
+    }
+
+
     /**
      * @brief Read the header of this matrix file. Populates internal fields
      * with the header information.
      */
-    void readHeader();
+    void readHeader(
+        dim_t & numRows,
+        dim_t & numCols,
+        ind_t & nnz);
 
 
     /**

@@ -18,6 +18,9 @@
 
 #include "IMatrixReader.hpp"
 #include "IMatrixWriter.hpp"
+#include "IRowMatrixReader.hpp"
+#include "IRowMatrixWriter.hpp"
+#include "CSRParser.hpp"
 #include "TextFile.hpp"
 
 
@@ -28,7 +31,9 @@ namespace WildRiver {
 
 class CSRFile :
   public IMatrixReader,
-  public IMatrixWriter
+  public IMatrixWriter,
+  public IRowMatrixReader,
+  public IRowMatrixWriter
 {
   public:
     /**
@@ -127,6 +132,14 @@ class CSRFile :
         val_t const * rowval) override;
 
 
+    /**
+     * @brief Read the header of this matrix file. Populates internal fields
+     * with the header information.
+     */
+    void readHeader();
+
+
+
   private:
     /**
      * @brief A buffer for reading each line.
@@ -138,6 +151,12 @@ class CSRFile :
      * @brief The underlying text file.
      */
     TextFile m_file;
+
+
+    /**
+    * @brief The row wise parser.
+    */
+    CSRParser m_parser;
 
 
     /**
@@ -175,20 +194,6 @@ class CSRFile :
      */
     void setNextRow(
         std::vector<matrix_entry_struct> const & next);
-
-
-    /**
-     * @brief Read the header of this matrix file. Populates internal fields
-     * with the header information.
-     */
-    void readHeader();
-
-
-    /**
-     * @brief Write the header of this matrix file. The header consists of
-     * internal fields set by "setInfo()".
-     */
-    void writeHeader();
 
 
 
