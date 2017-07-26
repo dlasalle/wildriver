@@ -74,17 +74,6 @@ class MatrixOutHandle
         val_t const * rowval);
 
 
-    /**
-     * @brief Set the entries in the next row of the matrix.
-     *
-     * @param next The entries.
-     *
-     * @return 
-     */
-    void setNextRow(
-        std::vector<matrix_entry_struct> const & next);
-
-
   private:
     std::unique_ptr<IMatrixWriter> m_writer;
 
@@ -93,7 +82,6 @@ class MatrixOutHandle
         MatrixOutHandle const & handle);
     MatrixOutHandle & operator=(
         MatrixOutHandle const & handle);
-
 
 
 

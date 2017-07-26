@@ -11,6 +11,7 @@
 
 
 #include "MatrixGraphWriter.hpp"
+#include "Exception.hpp"
 
 
 

@@ -21,8 +21,6 @@
 #include <stdexcept>
 
 #include "base.h"
-#include "MatrixEntry.hpp"
-#include "Exception.hpp"
 
 
 

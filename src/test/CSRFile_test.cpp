@@ -36,15 +36,6 @@ static void writeTest(
 
   csr.setInfo(6,6,14);
 
-  wildriver_dim_t nrows, ncols;
-  wildriver_ind_t nnz;
-
-  csr.getInfo(nrows,ncols,nnz);
-
-  testEquals(nrows,6);
-  testEquals(ncols,6);
-  testEquals(nnz,14);
-
   wildriver_ind_t rowptr[] = {0,2,4,7,10,12,14};
   wildriver_dim_t rowind[] = {1,2,0,2,0,1,3,2,4,5,3,5,3,4};
   wildriver_val_t rowval[] = {1,2,3,4,5,6,7,8,9,1,2,3,4,5};

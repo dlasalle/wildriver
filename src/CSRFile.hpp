@@ -16,8 +16,15 @@
 
 
 
+#include <memory>
+
+
 #include "IMatrixReader.hpp"
 #include "IMatrixWriter.hpp"
+#include "IRowMatrixReader.hpp"
+#include "IRowMatrixWriter.hpp"
+#include "CSRDecoder.hpp"
+#include "CSREncoder.hpp"
 #include "TextFile.hpp"
 
 
@@ -26,9 +33,11 @@
 namespace WildRiver {
 
 
-class CSRFile : 
+class CSRFile :
   public IMatrixReader,
-  public IMatrixWriter
+  public IMatrixWriter,
+  public IRowMatrixReader,
+  public IRowMatrixWriter
 {
   public:
     /**
@@ -38,7 +47,7 @@ class CSRFile :
 
 
     /**
-     * @brief Check if the given filename matches an extension for this 
+     * @brief Check if the given filename matches an extension for this
      * filetype.
      *
      * @param f The filename.
@@ -92,7 +101,7 @@ class CSRFile :
 
     /**
      * @brief Get the sparse matrix in CSR form. The pointers must be
-     * pre-allocated to the sizes required by the info of the matrix 
+     * pre-allocated to the sizes required by the info of the matrix
      *
      * |rowptr| = nrows + 1
      * |rowind| = nnz
@@ -127,37 +136,61 @@ class CSRFile :
         val_t const * rowval) override;
 
 
+    /**
+     * @brief Read the header of this matrix file. Populates internal fields
+     * with the header information.
+     */
+    void readHeader(
+        dim_t & numRows,
+        dim_t & numCols,
+        ind_t & nnz) override;
+
+
+    /**
+     * @brief Get the next row in the matrix (adjacecny list in the graph).
+     *
+     * @param numNonZeros The number of non-zeros in the row (output).
+     * @param columns The column of each non-zero entry (must be of length at
+     * least the number of non-zero entries).
+     * @param values The value of each non-zero entry (must be null or of
+     * length at least the number of non-zero entries).
+     *
+     * @return True if another row was found in the file.
+     */
+    void getNextRow(
+        dim_t * numNonZeros,
+        dim_t * columns,
+        val_t * values) override;
+
+
+    /**
+     * @brief Writer the header to the file (this is a no-op for CSF files).
+     *
+     * @param numRows The number of rows.
+     * @param numCols The number of columns.
+     * @param nnz The number of non-zeros.
+     */
+    void writeHeader(
+        dim_t numRows,
+        dim_t numCols,
+        ind_t nnz) override;
+
+
+    /**
+     * @brief Set the next row in the matrix file.
+     *
+     * @param numNonZeros The number of non-zeros in the row.
+     * @param columns The column IDs.
+     * @param values The values.
+     */
+    void setNextRow(
+        dim_t numNonZeros,
+        dim_t const * columns,
+        val_t const * values) override;
+
+
+
   private:
-    /**
-    * @brief Whether or not the matrix information has been set.
-    */
-    bool m_infoSet;
-
-
-    /**
-     * @brief The number of rows in the matrix.
-     */
-    dim_t m_numRows;
-
-
-    /**
-     * @brief The number of columns in the matrix.
-     */
-    dim_t m_numCols;
-
-
-    /**
-     * @brief The number of non-zeros in the matrix.
-     */
-    ind_t m_nnz;
-
-
-    /**
-    * @brief The current row being processed.
-    */
-    dim_t m_currentRow;
-
-
     /**
      * @brief A buffer for reading each line.
      */
@@ -171,6 +204,18 @@ class CSRFile :
 
 
     /**
+     * @brief The row wise decoder.
+     */
+    std::unique_ptr<CSRDecoder> m_decoder;
+
+
+    /**
+     * @brief The row wise encoder.
+     */
+    std::unique_ptr<CSREncoder> m_encoder;
+
+
+    /**
     * @brief Get the next non-comment line from the file.
     *
     * @param line The line buffer.
@@ -179,66 +224,6 @@ class CSRFile :
     */
     bool nextNoncommentLine(
         std::string & line);
-
-
-    /**
-     * @brief Reset the current position in the matrix file to the first row.
-     */
-    void firstRow();
-
-
-    /**
-     * @brief Get the next row in the matrix (adjacecny list in the graph).
-     *
-     * @param numNonZeros The number of non-zeros in the row (output).
-     * @param columns The column of each non-zero entry (must be of length at
-     * least the number of non-zero entries).
-     * @param values The value of each non-zero entry (must be null or of 
-     * length at least the number of non-zero entries).
-     *
-     * @return True if another row was found in the file.
-     */
-    bool getNextRow(
-        dim_t * numNonZeros,
-        dim_t * columns,
-        val_t * values);
-
-
-    /**
-     * @brief Set the next row in the matrix file.
-     *
-     * @param next The row to set.
-     */
-    void setNextRow(
-        std::vector<matrix_entry_struct> const & next);
-
-
-    /**
-     * @brief Read the header of this matrix file. Populates internal fields
-     * with the header information.
-     */
-    void readHeader();
-
-
-    /**
-     * @brief Write the header of this matrix file. The header consists of
-     * internal fields set by "setInfo()".
-     */
-    void writeHeader(); 
-
-
-    /**
-     * @brief Determine the given line is a comment.
-     *
-     * @param line The line.
-     *
-     * @return True if the line is a comment.
-     */
-    bool isComment(
-        std::string const & line) const noexcept;
-
-
-
 
 
 
