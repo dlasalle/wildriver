@@ -2,15 +2,24 @@
  * @file Util.hpp
  * @brief Utility functions.
  * @author Dominique LaSalle <dominique@solidlake.com>
- * Copyright 2017, Solid Lake LLC
+ * Copyright 2017
  * @version 1
  * @date 2017-08-03
  */
 
 
 
+
+#ifndef WILDIRVER_UTIL_HPP
+#define WILDIRVER_UTIL_HPP
+
+
+
+
+#include <cstring>
 #include <string>
 #include <vector>
+
 
 
 
@@ -19,7 +28,7 @@ namespace WildRiver
 
 
 
-class Utility
+class Util
 {
   public:
     /**
@@ -47,7 +56,7 @@ class Utility
       std::vector<std::string> chunks;
       size_t last = 0;
       for (size_t i = 0; i < input.length(); ++i) {
-        if (map[input[i]]) {
+        if (map[static_cast<uint8_t>(input[i])]) {
           if (i > last) {
             chunks.emplace_back(input.substr(last, i));
           }
@@ -68,3 +77,8 @@ class Utility
 
 
 }
+
+
+
+
+#endif

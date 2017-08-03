@@ -11,6 +11,7 @@
 
 
 #include "MatrixMarketFile.hpp"
+#include <map>
 #include "Exception.hpp"
 #include "Util.hpp"
 
@@ -30,30 +31,52 @@ namespace
 {
 
 
-const std::vector<std::string> EXTENSIONS{".csr"};
+size_t const BUFFER_SIZE = 1024;
+
+std::vector<std::string> const EXTENSIONS{".csr"};
 
 
-typedef enum matrix_market_attributes {
+enum matrix_market_attributes {
   MATRIX_MARKET_NULL,
   MATRIX_MARKET_MATRIX,
   MATRIX_MARKET_VECTOR,
   MATRIX_MARKET_GENERAL,
-  MATRIX_MARKET_SYMMETRIC
+  MATRIX_MARKET_SYMMETRIC,
   MATRIX_MARKET_PATTERN,
   MATRIX_MARKET_REAL,
-  MATRIX_MARKET_INTEGER
+  MATRIX_MARKET_INTEGER,
+  MATRIX_MARKET_COMPLEX,
+  MATRIX_MARKET_ARRAY,
+  MATRIX_MARKET_COORDINATE
 };
 
-const std::string BASE_HEADER("%%MatrixMarket");
 
-const std::map<std::string, int> ENTITY_MAPPING{
+std::string const BASE_HEADER("%%MatrixMarket");
+
+
+std::map<std::string, int> const ENTITY_MAPPING{
   {"matrix", MATRIX_MARKET_MATRIX},
   {"vector", MATRIX_MARKET_VECTOR}
 };
 
-const std::map<std::string, int> STORAGE_MAPPING{
+
+std::map<std::string, int> const STORAGE_MAPPING{
   {"general", MATRIX_MARKET_GENERAL},
   {"symmetric", MATRIX_MARKET_SYMMETRIC}
+};
+
+
+std::map<std::string, int> const FORMAT_MAPPING{
+  {"array", MATRIX_MARKET_ARRAY},
+  {"coordinate", MATRIX_MARKET_COORDINATE}
+};
+
+
+std::map<std::string, int> const TYPE_MAPPING{
+  {"real", MATRIX_MARKET_REAL},
+  {"complex", MATRIX_MARKET_REAL},
+  {"integer", MATRIX_MARKET_INTEGER},
+  {"pattern", MATRIX_MARKET_PATTERN}
 };
 
 
@@ -83,15 +106,14 @@ bool isComment(
 /**
  * @brief Parse a line containing a triplet (row, column, value).
  *
- * @tparam D The type of the 'row'.
- * @tparam D The type of the 'column'.
+ * @tparam D The type of the 'row' and 'column'.
  * @tparam V The type of the 'value'.
  * @param line The line.
  * @param row The row (output).
  * @param col The column (output).
  * @param val The value (output).
  */
-template<typename D, typename D, typename V>
+template<typename D, typename V>
 void parseTriplet(
     std::string const & line,
     D & row,
@@ -99,7 +121,8 @@ void parseTriplet(
     V & val)
 {
   char * sptr;
-  char * eptr = static_cast<char*>(m_line.data());
+  std::vector<char> stringBuffer(line.c_str(), line.c_str() + line.length()+1);
+  char * eptr = stringBuffer.data();
   while (true) {
     sptr = eptr;
     row = static_cast<D>(std::strtoull(sptr, &eptr, 10)-1);
@@ -116,7 +139,7 @@ void parseTriplet(
     }
 
     sptr = eptr;
-    if (is_floating_point<V>::value) {
+    if (std::is_floating_point<V>::value) {
       val = static_cast<V>(std::strtod(sptr, &eptr));
     } else {
       val = static_cast<V>(std::strtoll(sptr, &eptr, 10));
@@ -129,7 +152,10 @@ void parseTriplet(
 }
 
 
+
+
 }
+
 
 
 
@@ -215,14 +241,15 @@ void MatrixMarketFile::getInfo(
     // parse out matrix data
     if (chunks.size() < 2) {
       throw BadFileException(std::string("Missing 'coordinate' or 'array' " \
-            "specifier for matrix '") + m_file + std::string("'."));
+            "specifier for matrix '") + m_file.getFilename() + \
+            std::string("'."));
     }
     m_format = FORMAT_MAPPING.at(chunks[1]);
 
     if (chunks.size() < 3) {
       throw BadFileException(std::string("Missing 'real', " \
             "'integer', or 'pattern' specifier for matrix '") + \
-          m_file + std::string("'."));
+          m_file.getFilename() + std::string("'."));
     }
     m_type = FORMAT_MAPPING.at(chunks[2]);
     if (m_type == MATRIX_MARKET_COMPLEX) {
@@ -230,8 +257,8 @@ void MatrixMarketFile::getInfo(
     }
 
     if (chunks.size() < 4) {
-      throw BadFileException(std::string("Missing 'general' or " + \
-          "'symmetric' specifier for matrix '") + m_file + \
+      throw BadFileException(std::string("Missing 'general' or " \
+          "'symmetric' specifier for matrix '") + m_file.getFilename() + \
           std::string("'."));
     }
     m_symmetric = STORAGE_MAPPING.at(chunks[3]) == MATRIX_MARKET_SYMMETRIC; 
@@ -243,9 +270,9 @@ void MatrixMarketFile::getInfo(
           throw BadFileException(std::string("Failed to find header line " \
               "in '") + m_file.getFilename() + std::string("'."));
         }
-      } while (isCommentLine(m_line));
+      } while (isComment(m_line));
 
-      parseTriplet(nrows, ncols, nnz);
+      parseTriplet(m_line, nrows, ncols, nnz);
     } else {
       throw BadFileException("Array matrices are not yet supported.");
     }

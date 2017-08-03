@@ -56,12 +56,12 @@ static void writeSparse(
 {
   std::fstream stream(testFile,std::fstream::out | std::fstream::trunc);
 
-  stream << "2 1 3 2" << std::endl;
-  stream << "1 3 3 4" << std::endl;
-  stream << "1 5 2 6 4 7" << std::endl;
-  stream << "3 8 5 9 6 1" << std::endl;
-  stream << "4 2 6 3" << std::endl;
-  stream << "4 4 5 5" << std::endl;
+  stream << "1 1 2 2" << std::endl;
+  stream << "0 3 2 4" << std::endl;
+  stream << "0 5 1 6 3 7" << std::endl;
+  stream << "2 8 4 9 5 1" << std::endl;
+  stream << "3 2 5 3" << std::endl;
+  stream << "3 4 4 5" << std::endl;
 }
 
 

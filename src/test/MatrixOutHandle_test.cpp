@@ -61,22 +61,22 @@ static void readSparse(
 
   // test matrix itself
   std::getline(stream,line);
-  testStringEquals(line,"2 1 3 2"); 
+  testStringEquals(line,"1 1 2 2"); 
 
   std::getline(stream,line);
-  testStringEquals(line,"1 3 3 4"); 
+  testStringEquals(line,"0 3 2 4"); 
 
   std::getline(stream,line);
-  testStringEquals(line,"1 5 2 6 4 7");
+  testStringEquals(line,"0 5 1 6 3 7");
 
   std::getline(stream,line);
-  testStringEquals(line,"3 8 5 9 6 1");
+  testStringEquals(line,"2 8 4 9 5 1");
 
   std::getline(stream,line);
-  testStringEquals(line,"4 2 6 3");
+  testStringEquals(line,"3 2 5 3");
 
   std::getline(stream,line);
-  testStringEquals(line,"4 4 5 5");
+  testStringEquals(line,"3 4 4 5");
 }
 
 
