@@ -34,10 +34,10 @@ namespace WildRiver {
 
 
 class CSRFile :
-  public IMatrixReader,
-  public IMatrixWriter,
-  public IRowMatrixReader,
-  public IRowMatrixWriter
+    public IMatrixReader,
+    public IMatrixWriter,
+    public IRowMatrixReader,
+    public IRowMatrixWriter
 {
   public:
     /**

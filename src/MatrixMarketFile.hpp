@@ -1,0 +1,140 @@
+/**
+* @file MatrixMarketFile.hpp
+* @brief Class for reading/writing matrix market files. 
+* @author Dominique LaSalle <dominique@solidlake.com>
+* Copyright 2017
+* @version 1
+* @date 2017-07-28
+*/
+
+
+
+
+#ifndef WILDRIVER_MATRIXMARKETFILE_HPP
+#define WILDRIVER_MATRIXMARKETFILE_HPP
+
+
+
+
+#include <memory>
+
+
+#include "IMatrixReader.hpp"
+#include "IMatrixWriter.hpp"
+#include "TextFile.hpp"
+
+
+
+
+namespace WildRiver
+{
+
+
+class MatrixMarketFile :
+    public IMatrixReader,
+    public IMatrixWriter
+{
+  public:
+    /**
+     * @brief Check if the given filename matches an extension for this
+     * filetype.
+     *
+     * @param f The filename.
+     *
+     * @return True if the extension matches this filetype.
+     */
+    static bool hasExtension(
+        std::string const & f);
+
+
+    /**
+     * @brief Create a new MatrixMarketFile for reading and writing.
+     *
+     * @param fname The filename/path.
+     */
+    MatrixMarketFile(
+        std::string const & fname);
+
+
+    /**
+     * @brief Close file and free any memory.
+     */
+    virtual ~MatrixMarketFile();
+
+
+    /**
+     * @brief Get the number of rows, columns, and non-zeros in the matrix.
+     *
+     * @param nrows The number of rows.
+     * @param ncols The number of columns.
+     * @param nnz THe number of non-zeros.
+     */
+    virtual void getInfo(
+        dim_t & nrows,
+        dim_t & ncols,
+        ind_t & nnz) override;
+
+
+    /**
+     * @brief Set the matrix information for this file.
+     *
+     * @param nrows The number of rows in the matrix.
+     * @param ncols The number of columns in the matrix.
+     * @param nnz The number of non-zeroes in the matrix.
+     */
+    virtual void setInfo(
+        dim_t nrows,
+        dim_t ncols,
+        ind_t nnz) override;
+
+
+    /**
+     * @brief Get the sparse matrix in CSR form. The pointers must be
+     * pre-allocated to the sizes required by the info of the matrix
+     *
+     * |rowptr| = nrows + 1
+     * |rowind| = nnz
+     * |rowval| = nnz
+     *
+     * @param rowptr The row pointer indicating the start of each row.
+     * @param rowind The row column indexs (i.e., for each element in a row,
+     * the column index corresponding to that element).
+     * @param rowval The row values.
+     * @param progress The variable to update as the matrix is loaded (may be
+     * null).
+     */
+    virtual void read(
+        ind_t * rowptr,
+        dim_t * rowind,
+        val_t * rowval,
+        double * progress) override;
+
+
+    /**
+     * @brief Write the given CSR structure to teh file. The information for
+     * the matrix must already be set.
+     *
+     * @param rowptr The row pointer indicating the start of each row.
+     * @param rowind The row column indexs (i.e., for each element in a row,
+     * the column index corresponding to that element).
+     * @param rowval The row values.
+     */
+    virtual void write(
+        ind_t const * rowptr,
+        dim_t const * rowind,
+        val_t const * rowval) override;
+
+
+
+
+};
+
+
+
+
+}
+
+
+
+
+#endif
