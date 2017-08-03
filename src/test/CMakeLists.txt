@@ -10,6 +10,7 @@ include_directories(.)
 
 
 setup_test(CSRFile_test)
+setup_test(MatrixMarketFile_test)
 setup_test(GraphInHandle_test)
 setup_test(GraphOutHandle_test)
 setup_test(MatrixInHandle_test)

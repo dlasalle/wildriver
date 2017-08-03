@@ -270,7 +270,7 @@ void CSRFile::getNextRow(
   // Loop through row until we streamed to the end
   while (true) {
     sptr = eptr;
-    col = static_cast<dim_t>(std::strtoull(sptr,&eptr,10) - 1);
+    col = static_cast<dim_t>(std::strtoull(sptr,&eptr,10));
     if (eptr == sptr) {
       // nothing left to read
       break;

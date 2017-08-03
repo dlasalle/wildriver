@@ -127,6 +127,45 @@ class MatrixMarketFile :
 
 
 
+  private:
+    /**
+     * @brief Whether the info has been written/read.
+     */
+    bool m_infoSet;
+
+    /**
+     * @brief The last read line from the text file.
+     */
+    std::string m_line;
+
+    /**
+     * @brief The underlying text file.
+     */
+    TextFile m_file;
+
+    /**
+     * @brief What type of structure is stored (matrix, vector, etc.).
+     */
+    int m_entity;
+
+    /**
+     * @brief Whether the martix is coordinate or array stored.
+     */
+    int m_format;
+
+    /**
+     * @brief What type of values are in the matrix (real, complex, integer,
+     * pattern).
+     */
+    int m_type;
+
+    /**
+     * @brief Whether or not the matrix is symmetric.
+     */
+    bool m_symmetric;
+
+
+
 };
 
 
