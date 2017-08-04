@@ -2,7 +2,7 @@
  * @file CSRFile_test.cpp
  * @brief Test for reading and writing CSR formatted csrs.
  * @author Dominique LaSalle <wildriver@domnet.org>
- * Copyright 2015
+ * Copyright 2015-2017
  * @version 1
  *
  */

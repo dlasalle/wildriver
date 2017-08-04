@@ -67,7 +67,8 @@ TextFile::TextFile(
   m_name(name),
   m_stream()
 {
-  // do nothing
+  // throw exceptions when things go wrong
+  m_stream.exceptions(std::fstream::failbit | std::fstream::badbit);
 }
 
 
@@ -143,9 +144,14 @@ void TextFile::resetStream()
 bool TextFile::nextLine(
     std::string & line)
 {
-  std::getline(m_stream,line);
+  try {
+    std::getline(m_stream,line);
+  } catch (std::fstream::failure const & e) {
+    // at eof
+    return false;
+  }
 
-  if (line.size() > 0 || m_stream.good()) {
+  if (line.size() > 0 || !m_stream.eof()) {
     ++m_currentLine;
     return true;
   } else {

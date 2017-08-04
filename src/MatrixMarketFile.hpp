@@ -1,17 +1,17 @@
 /**
- * @file CSRFile.hpp
- * @brief Class for reading/writing metis files.
- * @author Dominique LaSalle <wildriver@domnet.org>
- * Copyright 2015-2016
- * @version 1
- *
- */
+* @file MatrixMarketFile.hpp
+* @brief Class for reading/writing matrix market files. 
+* @author Dominique LaSalle <dominique@solidlake.com>
+* Copyright 2017
+* @version 1
+* @date 2017-07-28
+*/
 
 
 
 
-#ifndef WILDRIVER_CSRFILE_HPP
-#define WILDRIVER_CSRFILE_HPP
+#ifndef WILDRIVER_MATRIXMARKETFILE_HPP
+#define WILDRIVER_MATRIXMARKETFILE_HPP
 
 
 
@@ -21,31 +21,20 @@
 
 #include "IMatrixReader.hpp"
 #include "IMatrixWriter.hpp"
-#include "IRowMatrixReader.hpp"
-#include "IRowMatrixWriter.hpp"
-#include "CSRDecoder.hpp"
-#include "CSREncoder.hpp"
 #include "TextFile.hpp"
 
 
 
 
-namespace WildRiver {
+namespace WildRiver
+{
 
 
-class CSRFile :
+class MatrixMarketFile :
     public IMatrixReader,
-    public IMatrixWriter,
-    public IRowMatrixReader,
-    public IRowMatrixWriter
+    public IMatrixWriter
 {
   public:
-    /**
-     * @brief Name of this filetype.
-     */
-    static std::string const NAME;
-
-
     /**
      * @brief Check if the given filename matches an extension for this
      * filetype.
@@ -59,18 +48,18 @@ class CSRFile :
 
 
     /**
-     * @brief Create a new CSRFile for reading and writing.
+     * @brief Create a new MatrixMarketFile for reading and writing.
      *
      * @param fname The filename/path.
      */
-    CSRFile(
+    MatrixMarketFile(
         std::string const & fname);
 
 
     /**
      * @brief Close file and free any memory.
      */
-    virtual ~CSRFile();
+    virtual ~MatrixMarketFile();
 
 
     /**
@@ -137,90 +126,113 @@ class CSRFile :
 
 
     /**
-     * @brief Read the header of this matrix file. Populates internal fields
-     * with the header information.
-     */
-    void readHeader(
-        dim_t & numRows,
-        dim_t & numCols,
-        ind_t & nnz) override;
+    * @brief Read the header data from the file.
+    */
+    virtual void readHeader();
 
 
     /**
-     * @brief Get the next row in the matrix (adjacecny list in the graph).
-     *
-     * @param numNonZeros The number of non-zeros in the row (output).
-     * @param columns The column of each non-zero entry (must be of length at
-     * least the number of non-zero entries).
-     * @param values The value of each non-zero entry (must be null or of
-     * length at least the number of non-zero entries).
-     *
-     * @return True if another row was found in the file.
+     * @brief Write the header data to the file.
      */
-    void getNextRow(
-        dim_t * numNonZeros,
-        dim_t * columns,
-        val_t * values) override;
+    virtual void writeHeader();
 
 
     /**
-     * @brief Writer the header to the file (this is a no-op for CSF files).
+     * @brief Read in the matrix in coordinate format.
      *
-     * @param numRows The number of rows.
-     * @param numCols The number of columns.
-     * @param nnz The number of non-zeros.
-     */
-    void writeHeader(
-        dim_t numRows,
-        dim_t numCols,
-        ind_t nnz) override;
+     * @param rowptr The row pointer indicating the start of each row.
+     * @param rowind The row column indexs (i.e., for each element in a row,
+     * the column index corresponding to that element).
+     * @param rowval The row values.
+     * @param progress The variable to update as the matrix is loaded (may be
+     * null).
+    */
+    virtual void readCoordinates(
+        ind_t * rowptr,
+        dim_t * rowind,
+        val_t * rowval,
+        double * progress);
 
 
     /**
-     * @brief Set the next row in the matrix file.
-     *
-     * @param numNonZeros The number of non-zeros in the row.
-     * @param columns The column IDs.
-     * @param values The values.
-     */
-    void setNextRow(
-        dim_t numNonZeros,
-        dim_t const * columns,
-        val_t const * values) override;
+    * @brief Read in the matrix in array format.
+    */
+    virtual void readArray();
 
+
+    /**
+     * @brief Write the matrix out in coordinate format. 
+     *
+     * @param rowptr The row pointer indicating the start of each row.
+     * @param rowind The row column indexs (i.e., for each element in a row,
+     * the column index corresponding to that element).
+     * @param rowval The row values.
+     */
+    virtual void writeCoordinates(
+        ind_t const * rowptr,
+        dim_t const * rowind,
+        val_t const * rowval);
 
 
   private:
     /**
-     * @brief A buffer for reading each line.
+     * @brief Whether the info has been written/read.
+     */
+    bool m_infoSet;
+
+    /**
+    * @brief The number of rows in the underyling matrix.
+    */
+    dim_t m_nrows;
+
+    /**
+    * @brief The number of cols in the underlying matrix.
+    */
+    dim_t m_ncols;
+
+    /**
+    * @brief The number of non-zeros in the underlying matrix.
+    */
+    ind_t m_nnz;
+
+    /**
+     * @brief The last read line from the text file.
      */
     std::string m_line;
-
 
     /**
      * @brief The underlying text file.
      */
     TextFile m_file;
 
+    /**
+     * @brief What type of structure is stored (matrix, vector, etc.).
+     */
+    int m_entity;
 
     /**
-     * @brief The row wise decoder.
+     * @brief Whether the martix is coordinate or array stored.
      */
-    std::unique_ptr<CSRDecoder> m_decoder;
-
+    int m_format;
 
     /**
-     * @brief The row wise encoder.
+     * @brief What type of values are in the matrix (real, complex, integer,
+     * pattern).
      */
-    std::unique_ptr<CSREncoder> m_encoder;
+    int m_type;
+
+    /**
+     * @brief Whether or not the matrix is symmetric.
+     */
+    bool m_symmetric;
 
 
     /**
     * @brief Get the next non-comment line from the file.
     *
-    * @param line The line buffer.
+    * @param line The line to fill.
     *
-    * @return True if a line filled the buffer.
+    * @return True if the line was filled.
     */
     bool nextNoncommentLine(
         std::string & line);

@@ -12,6 +12,7 @@
 
 #include "MatrixReaderFactory.hpp"
 #include "CSRFile.hpp"
+#include "MatrixMarketFile.hpp"
 #include "MetisFile.hpp"
 #include "GraphReaderFactory.hpp"
 #include "GraphMatrixReader.hpp"
@@ -36,6 +37,8 @@ std::unique_ptr<IMatrixReader> MatrixReaderFactory::make(
   // determine what type of reader to instantiate based on extension
   if (CSRFile::hasExtension(name)) {
     file.reset(new CSRFile(name));
+  } else if (MatrixMarketFile::hasExtension(name)) {
+    file.reset(new MatrixMarketFile(name));
   } else if (MetisFile::hasExtension(name)) {
     std::unique_ptr<IGraphReader> graphPtr(GraphReaderFactory::make(name));
     file.reset(new GraphMatrixReader(graphPtr));

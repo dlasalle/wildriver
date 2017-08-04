@@ -244,6 +244,9 @@ void CSRFile::readHeader(
     ++numRows;
   }
 
+  // assume we started counting at 0
+  ++numCols;
+
   // go back to the start
   m_file.resetStream();
 }
@@ -270,7 +273,7 @@ void CSRFile::getNextRow(
   // Loop through row until we streamed to the end
   while (true) {
     sptr = eptr;
-    col = static_cast<dim_t>(std::strtoull(sptr,&eptr,10) - 1);
+    col = static_cast<dim_t>(std::strtoull(sptr,&eptr,10));
     if (eptr == sptr) {
       // nothing left to read
       break;
@@ -314,9 +317,9 @@ void CSRFile::setNextRow(
   if (numNonZeros > 0) {
     const size_t last = numNonZeros - 1;
     for (size_t i = 0; i < last; ++i) {
-      streamBuffer << (columns[i]+1) << " " << values[i] << " ";
+      streamBuffer << (columns[i]) << " " << values[i] << " ";
     }
-    streamBuffer << (columns[last]+1) << " " << values[last];
+    streamBuffer << (columns[last]) << " " << values[last];
   }
 
   m_file.setNextLine(streamBuffer.str());

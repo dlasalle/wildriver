@@ -12,6 +12,7 @@
 
 #include "MatrixWriterFactory.hpp"
 #include "CSRFile.hpp"
+#include "MatrixMarketFile.hpp"
 #include "MetisFile.hpp"
 #include "GraphMatrixWriter.hpp"
 #include "GraphWriterFactory.hpp"
@@ -37,6 +38,8 @@ std::unique_ptr<IMatrixWriter> MatrixWriterFactory::make(
   // determine what type of reader to instantiate based on extension
   if (CSRFile::hasExtension(name)) {
     file.reset(new CSRFile(name));
+  } else if (MatrixMarketFile::hasExtension(name)) {
+    file.reset(new MatrixMarketFile(name));
   } else if (useAdapter) {
     std::unique_ptr<IGraphWriter> graphPtr(GraphWriterFactory::make(name, \
         false));
