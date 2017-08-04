@@ -132,9 +132,20 @@ class MatrixMarketFile :
 
 
     /**
-    * @brief Read in the matrix in coordinate format.
+     * @brief Read in the matrix in coordinate format.
+     *
+     * @param rowptr The row pointer indicating the start of each row.
+     * @param rowind The row column indexs (i.e., for each element in a row,
+     * the column index corresponding to that element).
+     * @param rowval The row values.
+     * @param progress The variable to update as the matrix is loaded (may be
+     * null).
     */
-    virtual void readCoordinates();
+    virtual void readCoordinates(
+        ind_t * const rowptr,
+        dim_t * const rowind,
+        val_t * const rowval,
+        double * progress);
 
 
     /**

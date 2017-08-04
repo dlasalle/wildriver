@@ -256,7 +256,7 @@ void MatrixMarketFile::read(
     ind_t * const rowptr,
     dim_t * const rowind,
     val_t * const rowval,
-    double * progress)
+    double * const progress)
 {
   if (!m_infoSet) {
     // read header
@@ -265,7 +265,7 @@ void MatrixMarketFile::read(
 
   if (m_format == MATRIX_MARKET_COORDINATE) {
     // sparse
-    readCoordinates();
+    readCoordinates(rowptr, rowind, rowval, progress);
   } else if (m_format == MATRIX_MARKET_ARRAY) {
     // dense
     readArray();
@@ -370,10 +370,24 @@ void MatrixMarketFile::readHeader()
 }
 
 
-void MatrixMarketFile::readCoordinates()
+void MatrixMarketFile::readCoordinates(
+    ind_t * const rowptr,
+    dim_t * const rowind,
+    val_t * const rowval,
+    double * const progress)
 {
   dim_t row, col;
   val_t value;
+
+  // this gets complicated -- we want to read in the matrix as fast as
+  // possible:
+  // if the triplets are in row major order, we can do it in a single pass
+  // and be very happy. If they are out of order, we need to passes 1) to count
+  // the size of each row and 2) to fill each row.
+
+  bool inOrder = true;
+  dim_t lastRow = 0;
+  rowptr[0] = 0;
   for (ind_t nnz = 0; nnz < m_nnz; ++nnz) {
     if (!m_file.nextLine(m_line)) {
       throw BadFileException(std::string("Only found ") + \
@@ -391,10 +405,38 @@ void MatrixMarketFile::readCoordinates()
       throw BadFileException("Complex types are not supported.");
     }
 
+    if (row < lastRow) {
+      // we're not in order
+      inOrder = false;
+    }
 
+    if (inOrder) {
+      // fill the matrix
+      if (row != lastRow) {
+        // row change
+        rowptr[lastRow] = nnz;
+      }
+
+      rowind[nnz] = col;
+      rowval[nnz] = value;
+    } else {
+      // just count rows
+      ++rowptr[row];
+    }
+
+    lastRow = row;
+  }
+
+  if (!inOrder) {
+    // now we need to actually fill the matrix
   }
 }
 
+
+void MatrixMarketFile::readArray()
+{
+  throw BadFileException("Reading arrays unimplemented.");
+}
 
 
 
