@@ -37,7 +37,7 @@ namespace
 
 size_t const BUFFER_SIZE = 1024;
 
-std::vector<std::string> const EXTENSIONS{".csr"};
+std::vector<std::string> const EXTENSIONS{".mm", ".mtx"};
 
 
 enum matrix_market_attributes {

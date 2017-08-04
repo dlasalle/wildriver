@@ -346,6 +346,12 @@ void Test::run()
 
   removeFile(csrFile);
 
+  std::string const mmFile("/tmp/wildriver_test.mtx");
+  writeMatrix(mmFile);
+  readMatrix(mmFile);
+
+  removeFile(mmFile);
+
   std::string const graphFile("/tmp/wildriver_test.graph");
   writeMatrix(graphFile);
   readMatrix(graphFile);
