@@ -128,37 +128,35 @@ void parseTriplet(
   std::vector<char> stringBuffer(line->c_str(), line->c_str() + \
       line->length()+1);
   char * eptr = stringBuffer.data();
-  while (true) {
-    sptr = eptr;
-    *row = static_cast<D>(std::strtoull(sptr, &eptr, 10)-1);
-    if (eptr == sptr) {
-      throw BadFileException(std::string("Unable to parse triplet row: ") + \
-          *line);
-    }
+  sptr = eptr;
+  *row = static_cast<D>(std::strtoull(sptr, &eptr, 10));
+  if (eptr == sptr) {
+    throw BadFileException(std::string("Unable to parse triplet row: ") + \
+        *line);
+  }
 
-    sptr = eptr;
-    *col = static_cast<D>(std::strtoull(sptr, &eptr, 10)-1);
+  sptr = eptr;
+  *col = static_cast<D>(std::strtoull(sptr, &eptr, 10));
+  if (eptr == sptr) {
+    throw BadFileException(std::string("Unable to parse triplet " \
+        "column: ") + *line);
+  }
+
+  V tmpVal;
+  sptr = eptr;
+  if (std::is_floating_point<V>::value) {
+    tmpVal = static_cast<V>(std::strtod(sptr, &eptr));
+  } else {
+    tmpVal = static_cast<V>(std::strtoll(sptr, &eptr, 10));
+  }
+
+  if (val != nullptr) {
     if (eptr == sptr) {
       throw BadFileException(std::string("Unable to parse triplet " \
-          "column: ") + *line);
+          "value: ") + *line);
     }
 
-    V tmpVal;
-    sptr = eptr;
-    if (std::is_floating_point<V>::value) {
-      tmpVal = static_cast<V>(std::strtod(sptr, &eptr));
-    } else {
-      tmpVal = static_cast<V>(std::strtoll(sptr, &eptr, 10));
-    }
-
-    if (val != nullptr) {
-      if (eptr == sptr) {
-        throw BadFileException(std::string("Unable to parse triplet " \
-            "value: ") + *line);
-      }
-
-      *val = tmpVal;
-    }
+    *val = tmpVal;
   }
 }
 
@@ -348,7 +346,7 @@ void MatrixMarketFile::readHeader()
             "'integer', or 'pattern' specifier for matrix '") + \
           m_file.getFilename() + std::string("'."));
     }
-    m_type = FORMAT_MAPPING.at(chunks[2]);
+    m_type = TYPE_MAPPING.at(chunks[2]);
     if (m_type == MATRIX_MARKET_COMPLEX) {
       throw BadFileException("Complex numbers are not supported");
     }
@@ -406,7 +404,8 @@ void MatrixMarketFile::readCoordinates(
     val_t * const rowval,
     double * const progress)
 {
-  dim_t row, col;
+  // make these large enough to hold whatever value is in the file
+  int64_t row, col;
   val_t value;
 
   // TODO: I'd like to take advantage of cases where the triplets are in order:
@@ -418,7 +417,7 @@ void MatrixMarketFile::readCoordinates(
 
   // the strategy is to allocate a new 'row' array, read in our coordinate
   // data, and sort it
-  std::vector<dim_t> rows(m_nrows);
+  std::vector<dim_t> rows(m_nnz);
 
   // zero out rowptr
   for (size_t i = 0; i < m_nrows+1; ++i) {
@@ -443,22 +442,41 @@ void MatrixMarketFile::readCoordinates(
       throw BadFileException("Complex types are not supported.");
     }
 
-    rows[nnz] = row;
-    rowind[nnz] = col;
+    // handle 1-based rows
+    if (row <= 0) {
+      throw BadFileException(std::string("Invalid row ") + \
+          std::to_string(row) + std::string(" must be 1-based indexing."));
+    } else if (row > m_nrows) {
+      throw BadFileException(std::string("Invalid row ") + \
+          std::to_string(row) + std::string(" exceeds total rows ") + \
+          std::to_string(m_nrows) + std::string("."));
+    } 
+    --row;
+
+    // handle 1-based columns
+    if (col <= 0) {
+      throw BadFileException(std::string("Invalid column ") + \
+          std::to_string(col) + std::string(" must be 1-based indexing."));
+    } else if (row > m_nrows) {
+      throw BadFileException(std::string("Invalid column ") + \
+          std::to_string(col) + std::string(" exceeds total columns ") + \
+          std::to_string(m_ncols) + std::string("."));
+    }
+    --col;
+
+    rows[nnz] = static_cast<dim_t>(row);
+    rowind[nnz] = static_cast<dim_t>(col);
     rowval[nnz] = value;
 
     ++rowptr[row+1];
   }
 
   // prefix sum rows in the second row
-  for (ind_t i = 1; i < m_nrows; ++i) {
+  for (ind_t i = 1; i < m_nrows+1; ++i) {
     rowptr[i] += rowptr[i-1]; 
   }
-
-  // shift
-  for (ind_t i = m_nrows; i > 1; --i) {
-    rowptr[i] = rowptr[i-1]; 
-  }
+  assert(rowptr[0] == 0);
+  assert(rowptr[m_nrows] == m_nnz);
 
   // at this point we have a rowptr ready for insertion, and all triplets
   // stored in memory --  
@@ -466,11 +484,18 @@ void MatrixMarketFile::readCoordinates(
   // determine the source of each nz in the 'rows' variable
   std::vector<ind_t> source(m_nnz);
   for (ind_t nnz = 0; nnz < m_nnz; ++nnz) {
-    ind_t const dest = rowptr[rows[nnz]+1]++;
+    ind_t const dest = rowptr[rows[nnz]]++;
     source[dest] = nnz;
   }
-  assert(rowptr[0] == 0);
+
+  // shift
+  for (ind_t i = m_nrows; i > 0; --i) {
+    rowptr[i] = rowptr[i-1]; 
+  }
+  rowptr[0] = 0;
+
   assert(rowptr[m_nrows] == m_nnz);
+
 
   // place each nz
   for (ind_t nnz = 0; nnz < m_nnz; ++nnz) {
@@ -481,6 +506,7 @@ void MatrixMarketFile::readCoordinates(
 
     std::swap(rowind[nnz], rowind[src]);
     std::swap(rowval[nnz], rowval[src]);
+    std::swap(source[nnz], source[src]);
   }
 }
 
@@ -498,8 +524,8 @@ void MatrixMarketFile::writeCoordinates(
 {
   for (dim_t row = 0; row < m_nrows; ++row) {
     for (ind_t nnz = rowptr[row]; nnz < rowptr[row+1]; ++nnz) {
-      m_file.setNextLine(std::to_string(row) + std::string(" ") + \
-          std::to_string(rowind[nnz]) + std::string(" ") + \
+      m_file.setNextLine(std::to_string(row+1) + std::string(" ") + \
+          std::to_string(rowind[nnz]+1) + std::string(" ") + \
           std::to_string(rowval[nnz]));
     }
   }

@@ -29,6 +29,51 @@ namespace DomTest
 {
 
 
+static void writeInitial(
+    std::string const & testFile)
+{
+  std::ofstream f(testFile);
+
+  f << "%%MatrixMarket matrix coordinate real general" << std::endl;
+  f << "%=================================================================================" << std::endl;
+  f << "%" << std::endl;
+  f << "% This ASCII file represents a sparse MxN matrix with L " << std::endl;
+  f << "% nonzeros in the following Matrix Market format:" << std::endl;
+  f << "%" << std::endl;
+  f << "% +----------------------------------------------+" << std::endl;
+  f << "% |%%MatrixMarket matrix coordinate real general | <--- header line" << std::endl;
+  f << "% |%                                             | <--+" << std::endl;
+  f << "% |% comments                                    |    |-- 0 or more comment lines" << std::endl;
+  f << "% |%                                             | <--+         " << std::endl;
+  f << "% |    M  N  L                                   | <--- rows, columns, entries" << std::endl;
+  f << "% |    I1  J1  A(I1, J1)                         | <--+" << std::endl;
+  f << "% |    I2  J2  A(I2, J2)                         |    |" << std::endl;
+  f << "% |    I3  J3  A(I3, J3)                         |    |-- L lines" << std::endl;
+  f << "% |        . . .                                 |    |" << std::endl;
+  f << "% |    IL JL  A(IL, JL)                          | <--+" << std::endl;
+  f << "% +----------------------------------------------+   " << std::endl;
+  f << "%" << std::endl;
+  f << "% Indices are 1-based, i.e. A(1,1) is the first element." << std::endl;
+  f << "%" << std::endl;
+  f << "%=================================================================================" << std::endl;
+  f << "  6  6  14" << std::endl;
+  f << "    1     2   1" << std::endl;
+  f << "    1     3   2" << std::endl;
+  f << "    2     1   3" << std::endl;
+  f << "    2     3   4" << std::endl;
+  f << "    3     1   5" << std::endl;
+  f << "    3     2   6" << std::endl;
+  f << "    3     4   7" << std::endl;
+  f << "    4     3   8" << std::endl;
+  f << "    4     5   9" << std::endl;
+  f << "    4     6   1" << std::endl;
+  f << "    5     4   2" << std::endl;
+  f << "    5     6   3" << std::endl;
+  f << "    6     4   4" << std::endl;
+  f << "    6     5   5" << std::endl;
+}
+
+
 static void writeTest(
     std::string const & testFile)
 {
@@ -37,8 +82,8 @@ static void writeTest(
   mm.setInfo(6,6,14);
 
   wildriver_ind_t rowptr[] = {0,2,4,7,10,12,14};
-  wildriver_dim_t rowind[] = {1,2,0,2,0,1,3,2,4,5,3,5,3,4};
-  wildriver_val_t rowval[] = {1,2,3,4,5,6,7,8,9,1,2,3,4,5};
+  wildriver_dim_t rowind[] = {1,2, 0,2, 0,1,3, 2,4,5, 3,5, 3,4};
+  wildriver_val_t rowval[] = {1,2, 3,4, 5,6,7, 8,9,1, 2,3, 4,5};
 
   mm.write(rowptr,rowind,rowval);
 }
@@ -114,8 +159,15 @@ void Test::run()
 {
   std::string testFile("/tmp/MatrixMarketFile_test.mtx");
 
+  writeInitial(testFile);
+  readTest(testFile);
+
+  removeFile(testFile);
+
   writeTest(testFile);
   readTest(testFile);
+
+  removeFile(testFile);
 }
 
 
