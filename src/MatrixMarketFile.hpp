@@ -132,6 +132,12 @@ class MatrixMarketFile :
 
 
     /**
+     * @brief Write the header data to the file.
+     */
+    virtual void writeHeader();
+
+
+    /**
      * @brief Read in the matrix in coordinate format.
      *
      * @param rowptr The row pointer indicating the start of each row.
@@ -142,9 +148,9 @@ class MatrixMarketFile :
      * null).
     */
     virtual void readCoordinates(
-        ind_t * const rowptr,
-        dim_t * const rowind,
-        val_t * const rowval,
+        ind_t * rowptr,
+        dim_t * rowind,
+        val_t * rowval,
         double * progress);
 
 
@@ -154,6 +160,18 @@ class MatrixMarketFile :
     virtual void readArray();
 
 
+    /**
+     * @brief Write the matrix out in coordinate format. 
+     *
+     * @param rowptr The row pointer indicating the start of each row.
+     * @param rowind The row column indexs (i.e., for each element in a row,
+     * the column index corresponding to that element).
+     * @param rowval The row values.
+     */
+    virtual void writeCoordinates(
+        ind_t const * rowptr,
+        dim_t const * rowind,
+        val_t const * rowval);
 
 
   private:

@@ -9,6 +9,7 @@ endfunction()
 include_directories(.)
 
 
+setup_test(TextFile_test)
 setup_test(CSRFile_test)
 setup_test(MatrixMarketFile_test)
 setup_test(GraphInHandle_test)

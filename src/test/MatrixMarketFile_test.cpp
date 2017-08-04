@@ -112,7 +112,7 @@ static void readTest(
 
 void Test::run()
 {
-  std::string testFile("/tmp/MatrixMarketFile_test.csr");
+  std::string testFile("/tmp/MatrixMarketFile_test.mtx");
 
   writeTest(testFile);
   readTest(testFile);
