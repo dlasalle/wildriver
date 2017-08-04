@@ -49,7 +49,7 @@ class Util
       // mark my delimiters
       const size_t n = strlen(delims);
       for (size_t i = 0; i < n; ++i) {
-        map[(int)delims[i]] = 1;
+        map[(int)delims[i]] = true;
       }
 
       // fill in chunks
@@ -58,15 +58,18 @@ class Util
       for (size_t i = 0; i < input.length(); ++i) {
         if (map[static_cast<uint8_t>(input[i])]) {
           if (i > last) {
-            chunks.emplace_back(input.substr(last, i));
+            chunks.emplace_back(input.substr(last, i-last));
           }
           last = i+1;
         }
       }
+      // check for last chunk
+      if (last < input.length()) {
+        chunks.emplace_back(input.substr(last, input.length()-last));
+      }
 
       return chunks;
     }
-
 
 
 
