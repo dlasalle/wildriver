@@ -125,6 +125,24 @@ class MatrixMarketFile :
         val_t const * rowval) override;
 
 
+    /**
+    * @brief Read the header data from the file.
+    */
+    virtual void readHeader();
+
+
+    /**
+    * @brief Read in the matrix in coordinate format.
+    */
+    virtual void readCoordinates();
+
+
+    /**
+    * @brief Read in the matrix in array format.
+    */
+    virtual void readArray();
+
+
 
 
   private:
@@ -132,6 +150,21 @@ class MatrixMarketFile :
      * @brief Whether the info has been written/read.
      */
     bool m_infoSet;
+
+    /**
+    * @brief The number of rows in the underyling matrix.
+    */
+    dim_t m_nrows;
+
+    /**
+    * @brief The number of cols in the underlying matrix.
+    */
+    dim_t m_ncols;
+
+    /**
+    * @brief The number of non-zeros in the underlying matrix.
+    */
+    ind_t m_nnz;
 
     /**
      * @brief The last read line from the text file.
@@ -163,6 +196,18 @@ class MatrixMarketFile :
      * @brief Whether or not the matrix is symmetric.
      */
     bool m_symmetric;
+
+
+    /**
+    * @brief Get the next non-comment line from the file.
+    *
+    * @param line The line to fill.
+    *
+    * @return True if the line was filled.
+    */
+    bool nextNoncommentLine(
+        std::string & line);
+
 
 
 

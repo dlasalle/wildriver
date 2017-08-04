@@ -115,38 +115,45 @@ bool isComment(
  */
 template<typename D, typename V>
 void parseTriplet(
-    std::string const & line,
-    D & row,
-    D & col,
-    V & val)
+    std::string const * const line,
+    D * const row,
+    D * const col,
+    V * const val)
 {
   char * sptr;
-  std::vector<char> stringBuffer(line.c_str(), line.c_str() + line.length()+1);
+  std::vector<char> stringBuffer(line->c_str(), line->c_str() + \
+      line->length()+1);
   char * eptr = stringBuffer.data();
   while (true) {
     sptr = eptr;
-    row = static_cast<D>(std::strtoull(sptr, &eptr, 10)-1);
+    *row = static_cast<D>(std::strtoull(sptr, &eptr, 10)-1);
     if (eptr == sptr) {
       throw BadFileException(std::string("Unable to parse triplet row: ") + \
-          line);
+          *line);
     }
 
     sptr = eptr;
-    col = static_cast<D>(std::strtoull(sptr, &eptr, 10)-1);
+    *col = static_cast<D>(std::strtoull(sptr, &eptr, 10)-1);
     if (eptr == sptr) {
       throw BadFileException(std::string("Unable to parse triplet " \
-          "column: ") + line);
+          "column: ") + *line);
     }
 
+    V tmpVal;
     sptr = eptr;
     if (std::is_floating_point<V>::value) {
-      val = static_cast<V>(std::strtod(sptr, &eptr));
+      tmpVal = static_cast<V>(std::strtod(sptr, &eptr));
     } else {
-      val = static_cast<V>(std::strtoll(sptr, &eptr, 10));
+      tmpVal = static_cast<V>(std::strtoll(sptr, &eptr, 10));
     }
-    if (eptr == sptr) {
-      throw BadFileException(std::string("Unable to parse triplet value: ") + \
-          line);
+
+    if (val != nullptr) {
+      if (eptr == sptr) {
+        throw BadFileException(std::string("Unable to parse triplet " \
+            "value: ") + *line);
+      }
+
+      *val = tmpVal;
     }
   }
 }
@@ -174,6 +181,26 @@ bool MatrixMarketFile::hasExtension(
 
 
 /******************************************************************************
+* PRIVATE SECTIONS ************************************************************
+******************************************************************************/
+
+
+bool MatrixMarketFile::nextNoncommentLine(
+    std::string & line)
+{
+  do {
+    if (!m_file.nextLine(line)) {
+      return false;
+    }
+  } while (isComment(line));
+
+  return true;
+}
+
+
+
+
+/******************************************************************************
 * CONSTRUCTORS / DESTRUCTOR ***************************************************
 ******************************************************************************/
 
@@ -181,6 +208,9 @@ bool MatrixMarketFile::hasExtension(
 MatrixMarketFile::MatrixMarketFile(
     std::string const & filename) :
   m_infoSet(false),
+  m_nrows(NULL_DIM),
+  m_ncols(NULL_DIM),
+  m_nnz(NULL_IND),
   m_line(BUFFER_SIZE,'\0'),
   m_file(filename),
   m_entity(MATRIX_MARKET_NULL),
@@ -211,6 +241,58 @@ void MatrixMarketFile::getInfo(
     dim_t & ncols,
     ind_t & nnz)
 {
+  if (!m_infoSet) {
+    readHeader();
+
+  }
+
+  nrows = m_nrows;
+  ncols = m_ncols;
+  nnz = m_nnz;
+}
+
+
+void MatrixMarketFile::read(
+    ind_t * const rowptr,
+    dim_t * const rowind,
+    val_t * const rowval,
+    double * progress)
+{
+  if (!m_infoSet) {
+    // read header
+    throw UnsetInfoException("Cannot call read() before calling getInfo()");
+  }
+
+  if (m_format == MATRIX_MARKET_COORDINATE) {
+    // sparse
+    readCoordinates();
+  } else if (m_format == MATRIX_MARKET_ARRAY) {
+    // dense
+    readArray();
+  }
+}
+
+
+void MatrixMarketFile::setInfo(
+    dim_t const nrows,
+    dim_t const ncols,
+    ind_t const nnz)
+{
+
+}
+
+
+void MatrixMarketFile::write(
+    ind_t const * const rowptr,
+    dim_t const * const rowind,
+    val_t const * const rowval)
+{
+
+}
+
+
+void MatrixMarketFile::readHeader()
+{
   // read the special header
   if (!m_file.nextLine(m_line)) {
     throw BadFileException(std::string("Not a valid MatrixMarket file '") + \
@@ -221,7 +303,7 @@ void MatrixMarketFile::getInfo(
         m_file.getFilename() + std::string("': first line is: '") + m_line + \
       std::string("'."));
   }
-  
+
   // discard base header
   m_line = m_line.substr(BASE_HEADER.length()+1);
 
@@ -234,7 +316,7 @@ void MatrixMarketFile::getInfo(
       std::string("'."));
   }
 
-  // figure out the entity 
+  // figure out the entity
   m_entity = ENTITY_MAPPING.at(chunks[0]);
 
   if (m_entity == MATRIX_MARKET_MATRIX) {
@@ -261,7 +343,7 @@ void MatrixMarketFile::getInfo(
           "'symmetric' specifier for matrix '") + m_file.getFilename() + \
           std::string("'."));
     }
-    m_symmetric = STORAGE_MAPPING.at(chunks[3]) == MATRIX_MARKET_SYMMETRIC; 
+    m_symmetric = STORAGE_MAPPING.at(chunks[3]) == MATRIX_MARKET_SYMMETRIC;
 
     if (m_format == MATRIX_MARKET_COORDINATE) {
       // read past all comments until we get to the size line
@@ -272,7 +354,7 @@ void MatrixMarketFile::getInfo(
         }
       } while (isComment(m_line));
 
-      parseTriplet(m_line, nrows, ncols, nnz);
+      parseTriplet(&m_line, &m_nrows, &m_ncols, &m_nnz);
     } else {
       throw BadFileException("Array matrices are not yet supported.");
     }
@@ -288,34 +370,30 @@ void MatrixMarketFile::getInfo(
 }
 
 
-void MatrixMarketFile::read(
-    ind_t * const rowptr,
-    dim_t * const rowind,
-    val_t * const rowval,
-    double * progress)
+void MatrixMarketFile::readCoordinates()
 {
+  dim_t row, col;
+  val_t value;
+  for (ind_t nnz = 0; nnz < m_nnz; ++nnz) {
+    if (!m_file.nextLine(m_line)) {
+      throw BadFileException(std::string("Only found ") + \
+          std::to_string(nnz) + std::string("/") + std::to_string(m_nnz) + \
+          std::string(" non-zeros."));
+    }
 
+    if (m_type == MATRIX_MARKET_PATTERN) {
+      parseTriplet(&m_line, &row, &col, static_cast<val_t*>(nullptr));
+      value = 1;
+    } else if (m_type == MATRIX_MARKET_REAL || \
+        m_type == MATRIX_MARKET_INTEGER) {
+      parseTriplet(&m_line, &row, &col, &value);
+    } else {
+      throw BadFileException("Complex types are not supported.");
+    }
+
+
+  }
 }
-
-
-void MatrixMarketFile::setInfo(
-    dim_t const nrows,
-    dim_t const ncols,
-    ind_t const nnz)
-{
-
-}
-
-
-void MatrixMarketFile::write(
-    ind_t const * const rowptr,
-    dim_t const * const rowind,
-    val_t const * const rowval)
-{
-
-}
-
-
 
 
 
