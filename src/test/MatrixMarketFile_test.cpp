@@ -28,68 +28,129 @@ using namespace WildRiver;
 namespace DomTest
 {
 
+namespace
+{
 
-static void writeInitial(
+std::vector<ind_t> rowptrGeneral{
+  0, 2, 4, 7, 10, 12, 14
+};
+
+std::vector<dim_t> rowindGeneral{
+  1, 2,
+  0, 2,
+  0, 1, 3,
+  2, 4, 5,
+  3, 5,
+  3, 4
+};
+
+std::vector<val_t> rowvalGeneral{
+  1, 2,
+  3, 4,
+  5, 6, 7,
+  8, 9, 1,
+  2, 3,
+  4, 5
+};
+
+void writeInitialGeneral(
     std::string const & testFile)
 {
   std::ofstream f(testFile);
 
   f << "%%MatrixMarket matrix coordinate real general" << std::endl;
-  f << "%=================================================================================" << std::endl;
+  f << "%=======================================================" << std::endl;
   f << "%" << std::endl;
-  f << "% This ASCII file represents a sparse MxN matrix with L " << std::endl;
-  f << "% nonzeros in the following Matrix Market format:" << std::endl;
-  f << "%" << std::endl;
-  f << "% +----------------------------------------------+" << std::endl;
-  f << "% |%%MatrixMarket matrix coordinate real general | <--- header line" << std::endl;
-  f << "% |%                                             | <--+" << std::endl;
-  f << "% |% comments                                    |    |-- 0 or more comment lines" << std::endl;
-  f << "% |%                                             | <--+         " << std::endl;
-  f << "% |    M  N  L                                   | <--- rows, columns, entries" << std::endl;
-  f << "% |    I1  J1  A(I1, J1)                         | <--+" << std::endl;
-  f << "% |    I2  J2  A(I2, J2)                         |    |" << std::endl;
-  f << "% |    I3  J3  A(I3, J3)                         |    |-- L lines" << std::endl;
-  f << "% |        . . .                                 |    |" << std::endl;
-  f << "% |    IL JL  A(IL, JL)                          | <--+" << std::endl;
-  f << "% +----------------------------------------------+   " << std::endl;
-  f << "%" << std::endl;
-  f << "% Indices are 1-based, i.e. A(1,1) is the first element." << std::endl;
-  f << "%" << std::endl;
-  f << "%=================================================================================" << std::endl;
-  f << "  6  6  14" << std::endl;
-  f << "    1     2   1" << std::endl;
-  f << "    1     3   2" << std::endl;
-  f << "    2     1   3" << std::endl;
-  f << "    2     3   4" << std::endl;
-  f << "    3     1   5" << std::endl;
-  f << "    3     2   6" << std::endl;
-  f << "    3     4   7" << std::endl;
-  f << "    4     3   8" << std::endl;
-  f << "    4     5   9" << std::endl;
-  f << "    4     6   1" << std::endl;
-  f << "    5     4   2" << std::endl;
-  f << "    5     6   3" << std::endl;
-  f << "    6     4   4" << std::endl;
-  f << "    6     5   5" << std::endl;
+  f << "%=======================================================" << std::endl;
+
+  dim_t nrows = static_cast<dim_t>(rowptrGeneral.size()-1);
+  ind_t nnz = static_cast<ind_t>(rowptrGeneral[nrows]);
+
+  f << nrows << " " << nrows << " " << nnz << std::endl;
+
+  for (dim_t row = 0; row < nrows; ++row) {
+    for (ind_t colIdx = rowptrGeneral[row]; colIdx < rowptrGeneral[row+1];
+        ++colIdx) {
+      dim_t col = rowindGeneral[colIdx];
+      f << " " << (row+1) << " " << (col+1) << " " <<
+          rowvalGeneral[colIdx] << std::endl;
+    }
+  }
 }
 
 
-static void writeTest(
+std::vector<ind_t> rowptrSymmetric{
+  0, 2, 5, 6, 8
+};
+
+std::vector<dim_t> rowindSymmetric{
+  0, 1,
+  0, 1, 3,
+  2,
+  1, 3
+};
+
+std::vector<val_t> rowvalSymmetric{
+  1, 2,
+  2, 4, 8,
+  5,
+  8, 9
+};
+
+void writeInitialSymmetric(
+    std::string const & testFile)
+{
+  std::ofstream f(testFile);
+
+  f << "%%MatrixMarket matrix coordinate real symmetric" << std::endl;
+  f << "%=======================================================" << std::endl;
+  f << "%" << std::endl;
+  f << "%=======================================================" << std::endl;
+
+  dim_t nrows = static_cast<dim_t>(rowptrSymmetric.size()-1);
+
+  // nnz should be what's listed, not whats implicitly there
+  ind_t listedNNZ = 0;
+  for (dim_t row = 0; row < nrows; ++row) {
+    for (ind_t colIdx = rowptrSymmetric[row]; colIdx < rowptrSymmetric[row+1];
+        ++colIdx) {
+      dim_t col = rowindSymmetric[colIdx];
+      if (col <= row) {
+      ++listedNNZ;
+      }
+    }
+  }
+
+  f << nrows << " " << nrows << " " << listedNNZ << std::endl;
+
+  for (dim_t row = 0; row < nrows; ++row) {
+    for (ind_t colIdx = rowptrSymmetric[row]; colIdx < rowptrSymmetric[row+1];
+        ++colIdx) {
+      dim_t col = rowindSymmetric[colIdx];
+      if (col <= row) {
+        f << " " << (row+1) << " " << (col+1) << " " <<
+            rowvalSymmetric[colIdx] << std::endl;
+      }
+    }
+  }
+}
+
+
+void writeTestGeneral(
     std::string const & testFile)
 {
   MatrixMarketFile mm(testFile);
 
-  mm.setInfo(6,6,14);
+  dim_t nrows = static_cast<dim_t>(rowptrGeneral.size()-1);
+  ind_t nnz = static_cast<ind_t>(rowptrGeneral[nrows]);
 
-  wildriver_ind_t rowptr[] = {0,2,4,7,10,12,14};
-  wildriver_dim_t rowind[] = {1,2, 0,2, 0,1,3, 2,4,5, 3,5, 3,4};
-  wildriver_val_t rowval[] = {1,2, 3,4, 5,6,7, 8,9,1, 2,3, 4,5};
+  mm.setInfo(nrows, nrows, nnz);
 
-  mm.write(rowptr,rowind,rowval);
+  mm.write(rowptrGeneral.data(),rowindGeneral.data(),rowvalGeneral.data());
 }
 
 
-static void readTest(
+void readTestGeneral(
     std::string const & testFile)
 {
   MatrixMarketFile mm(testFile);
@@ -99,9 +160,9 @@ static void readTest(
 
   mm.getInfo(nrows,ncols,nnz);
 
-  testEquals(nrows,6);
-  testEquals(ncols,6);
-  testEquals(nnz,14);
+  testEquals(nrows,rowptrGeneral.size()-1);
+  testEquals(ncols,rowptrGeneral.size()-1);
+  testEquals(nnz,rowptrGeneral[nrows]);
 
   std::unique_ptr<wildriver_ind_t[]> rowptr(new wildriver_ind_t[nrows+1]);
   std::unique_ptr<wildriver_dim_t[]> rowind(new wildriver_dim_t[nnz]);
@@ -110,64 +171,87 @@ static void readTest(
   mm.read(rowptr.get(),rowind.get(),rowval.get(),nullptr);
 
   // test rowptr
-  testEquals(rowptr[0],0);
-  testEquals(rowptr[1],2);
-  testEquals(rowptr[2],4);
-  testEquals(rowptr[3],7);
-  testEquals(rowptr[4],10);
-  testEquals(rowptr[5],12);
-  testEquals(rowptr[6],14);
+  for (dim_t i = 0; i < rowptrGeneral.size(); ++i) {
+    testEquals(rowptr[i], rowptrGeneral[i]);
+  }
 
   // test rowind
-  testEquals(rowind[0],1);
-  testEquals(rowind[1],2);
-  testEquals(rowval[0],1);
-  testEquals(rowval[1],2);
+  for (ind_t i = 0; i < rowindGeneral.size(); ++i) {
+    testEquals(rowind[i], rowindGeneral[i]);
+  }
 
-  testEquals(rowind[2],0);
-  testEquals(rowind[3],2);
-  testEquals(rowval[2],3);
-  testEquals(rowval[3],4);
+  // test rowval
+  for (ind_t i = 0; i < rowvalGeneral.size(); ++i) {
+    testEquals(rowval[i], rowvalGeneral[i]);
+  }
+}
 
-  testEquals(rowind[4],0);
-  testEquals(rowind[5],1);
-  testEquals(rowind[6],3);
-  testEquals(rowval[4],5);
-  testEquals(rowval[5],6);
-  testEquals(rowval[6],7);
+void readTestSymmetric(
+    std::string const & testFile)
+{
+  MatrixMarketFile mm(testFile);
 
-  testEquals(rowind[7],2);
-  testEquals(rowind[8],4);
-  testEquals(rowind[9],5);
-  testEquals(rowval[7],8);
-  testEquals(rowval[8],9);
-  testEquals(rowval[9],1);
+  wildriver_dim_t nrows, ncols;
+  wildriver_ind_t nnz;
 
-  testEquals(rowind[10],3);
-  testEquals(rowind[11],5);
-  testEquals(rowval[10],2);
-  testEquals(rowval[11],3);
+  mm.getInfo(nrows,ncols,nnz);
 
-  testEquals(rowind[12],3);
-  testEquals(rowind[13],4);
-  testEquals(rowval[12],4);
-  testEquals(rowval[13],5);
+  testEquals(nrows,rowptrSymmetric.size()-1);
+  testEquals(ncols,rowptrSymmetric.size()-1);
+  testGreaterThanOrEqual(nnz,rowptrSymmetric[nrows]);
+
+  std::unique_ptr<wildriver_ind_t[]> rowptr(new wildriver_ind_t[nrows+1]);
+  std::unique_ptr<wildriver_dim_t[]> rowind(new wildriver_dim_t[nnz]);
+  std::unique_ptr<wildriver_val_t[]> rowval(new wildriver_val_t[nnz]);
+
+  mm.read(rowptr.get(),rowind.get(),rowval.get(),nullptr);
+
+  // test rowptr
+  for (dim_t i = 0; i < rowptrSymmetric.size(); ++i) {
+    testEquals(rowptr[i], rowptrSymmetric[i]);
+  }
+
+  // test rowind
+  for (ind_t i = 0; i < rowindSymmetric.size(); ++i) {
+    testEquals(rowind[i], rowindSymmetric[i]);
+  }
+
+  // test rowval
+  for (ind_t i = 0; i < rowvalSymmetric.size(); ++i) {
+    testEquals(rowval[i], rowvalSymmetric[i]);
+  }
 }
 
 
+
+}
+
 void Test::run()
 {
-  std::string testFile("/tmp/MatrixMarketFile_test.mtx");
+  // general test
+  {
+    std::string testFile("/tmp/MatrixMarketGeneral_test.mtx");
 
-  writeInitial(testFile);
-  readTest(testFile);
+    writeInitialGeneral(testFile);
+    readTestGeneral(testFile);
 
-  removeFile(testFile);
+    removeFile(testFile);
 
-  writeTest(testFile);
-  readTest(testFile);
+    writeTestGeneral(testFile);
+    readTestGeneral(testFile);
 
-  removeFile(testFile);
+    removeFile(testFile);
+  }
+
+  // symmetric test
+  {
+    std::string testFile("/tmp/MatrixMarketSymmetric_test.mtx");
+
+    writeInitialSymmetric(testFile);
+    readTestSymmetric(testFile);
+
+    removeFile(testFile);
+  }
 }
 
 
