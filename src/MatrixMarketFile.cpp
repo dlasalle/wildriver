@@ -266,7 +266,11 @@ void MatrixMarketFile::read(
 
   if (m_format == MATRIX_MARKET_COORDINATE) {
     // sparse
-    readCoordinates(rowptr, rowind, rowval, progress);
+    if (m_symmetric) {
+      readSymmetricCoordinates(rowptr, rowind, rowval, progress);
+    } else {
+      readCoordinates(rowptr, rowind, rowval, progress);
+    }
   } else if (m_format == MATRIX_MARKET_ARRAY) {
     // dense
     readArray();
@@ -341,6 +345,20 @@ void MatrixMarketFile::readHeader()
     }
     m_format = FORMAT_MAPPING.at(chunks[1]);
 
+    if (m_format == MATRIX_MARKET_COORDINATE) {
+      // read past all comments until we get to the size line
+      do {
+        if (!m_file.nextLine(m_line)) {
+          throw BadFileException(std::string("Failed to find header line " \
+              "in '") + m_file.getFilename() + std::string("'."));
+        }
+      } while (isComment(m_line));
+
+      parseTriplet(&m_line, &m_nrows, &m_ncols, &m_nnz);
+    } else {
+      throw BadFileException("Array matrices are not yet supported.");
+    }
+
     if (chunks.size() < 3) {
       throw BadFileException(std::string("Missing 'real', " \
             "'integer', or 'pattern' specifier for matrix '") + \
@@ -357,20 +375,12 @@ void MatrixMarketFile::readHeader()
           std::string("'."));
     }
     m_symmetric = STORAGE_MAPPING.at(chunks[3]) == MATRIX_MARKET_SYMMETRIC;
-
-    if (m_format == MATRIX_MARKET_COORDINATE) {
-      // read past all comments until we get to the size line
-      do {
-        if (!m_file.nextLine(m_line)) {
-          throw BadFileException(std::string("Failed to find header line " \
-              "in '") + m_file.getFilename() + std::string("'."));
-        }
-      } while (isComment(m_line));
-
-      parseTriplet(&m_line, &m_nrows, &m_ncols, &m_nnz);
-    } else {
-      throw BadFileException("Array matrices are not yet supported.");
+    if (m_symmetric) {
+      // we need to pesimistically predict m_nnz -- there could be up to
+      // twice as many as reported if there are no diagonal entries.
+      m_nnz *= 2;
     }
+
   } else if (m_entity == MATRIX_MARKET_VECTOR) {
     // parse out vector data
     throw BadFileException("Vectors are currently unsupported.");
@@ -488,6 +498,28 @@ void MatrixMarketFile::readCoordinates(
     source[dest] = nnz;
   }
 
+  // we now need to sort the rowind and rowval arrays
+
+  // re-use rows to swap out rowind -- copy rowind over and then use source to
+  // copy it back
+  rows.assign(rowind, rowind+m_nnz);
+  for (ind_t nnz = 0; nnz < m_nnz; ++nnz) {
+    ind_t const src = source[nnz];
+    rowind[nnz] = rows[src];
+  }
+  // throw away rows
+  std::vector<dim_t>().swap(rows);
+
+  // copy over rowval
+  std::vector<val_t> vals(rowval, rowval+m_nnz);
+  for (ind_t nnz = 0; nnz < m_nnz; ++nnz) {
+    ind_t const src = source[nnz];
+    rowval[nnz] = vals[src];
+  }
+
+  // throw away vals
+  std::vector<val_t>().swap(vals);
+
   // shift
   for (ind_t i = m_nrows; i > 0; --i) {
     rowptr[i] = rowptr[i-1]; 
@@ -495,19 +527,145 @@ void MatrixMarketFile::readCoordinates(
   rowptr[0] = 0;
 
   assert(rowptr[m_nrows] == m_nnz);
+}
 
 
-  // place each nz
-  for (ind_t nnz = 0; nnz < m_nnz; ++nnz) {
-    ind_t const src = source[nnz];
+void MatrixMarketFile::readSymmetricCoordinates(
+    ind_t * const rowptr,
+    dim_t * const rowind,
+    val_t * const rowval,
+    double * const progress)
+{
+  // make these large enough to hold whatever value is in the file
+  int64_t row, col;
+  val_t value;
 
-    // make sure we're not overwriting
-    assert(src >= nnz);
+  // TODO: Avoiding the excess memory is more tricky here than for the
+  // 'general' case, as even if the nnz's are in order, the correspodning
+  // upper diagonal entries won't be. Still would be nice to do it in place.
 
-    std::swap(rowind[nnz], rowind[src]);
-    std::swap(rowval[nnz], rowval[src]);
-    std::swap(source[nnz], source[src]);
+  // the strategy is to allocate a new 'row' array, read in our coordinate
+  // data, and sort it
+  std::vector<dim_t> rows(m_nnz);
+
+  // zero out rowptr
+  for (size_t i = 0; i < m_nrows+1; ++i) {
+    rowptr[i] = 0;
   }
+
+  // count non-zeros per row
+  ind_t nnz = 0;
+  ind_t nlines = m_nnz / 2;
+  for (ind_t line = 0; line < nlines; ++line) {
+    if (!nextNoncommentLine(m_line)) {
+      throw BadFileException(std::string("Only found ") + \
+          std::to_string(nnz) + std::string("/") + std::to_string(m_nnz) + \
+          std::string(" non-zeros."));
+    }
+
+    if (m_type == MATRIX_MARKET_PATTERN) {
+      parseTriplet(&m_line, &row, &col, static_cast<val_t*>(nullptr));
+      value = 1;
+    } else if (m_type == MATRIX_MARKET_REAL || \
+        m_type == MATRIX_MARKET_INTEGER) {
+      parseTriplet(&m_line, &row, &col, &value);
+    } else {
+      throw BadFileException("Complex types are not supported.");
+    }
+
+    // handle 1-based rows
+    if (row <= 0) {
+      throw BadFileException(std::string("Invalid row ") + \
+          std::to_string(row) + std::string(" must be 1-based indexing."));
+    } else if (row > m_nrows) {
+      throw BadFileException(std::string("Invalid row ") + \
+          std::to_string(row) + std::string(" exceeds total rows ") + \
+          std::to_string(m_nrows) + std::string("."));
+    } 
+    --row;
+
+    // handle 1-based columns
+    if (col <= 0) {
+      throw BadFileException(std::string("Invalid column ") + \
+          std::to_string(col) + std::string(" must be 1-based indexing."));
+    } else if (col > row+1) {
+      // invalid for symmetric
+      throw BadFileException(std::string("Non-zero in upper triangle: (") + \
+          std::to_string(row) + std::string(", ") + std::to_string(col) + \
+          std::string(")."));
+    } else if (col > m_ncols) {
+      throw BadFileException(std::string("Invalid column ") + \
+          std::to_string(col) + std::string(" exceeds total columns ") + \
+          std::to_string(m_ncols) + std::string("."));
+    }
+    --col;
+
+    rows[nnz] = static_cast<dim_t>(row);
+    rowind[nnz] = static_cast<dim_t>(col);
+    rowval[nnz] = value;
+
+    ++rowptr[row+1];
+    ++nnz;
+
+    // add corresponding entry (if not diagonal)
+    if (row != col) {
+      rows[nnz] = static_cast<dim_t>(col);
+      rowind[nnz] = static_cast<dim_t>(row);
+      rowval[nnz] = value;
+
+      ++rowptr[col+1];
+      ++nnz;
+    }
+  }
+  // set proper nnz count
+  m_nnz = nnz;
+
+  // prefix sum rows in the second row
+  for (ind_t i = 1; i < m_nrows+1; ++i) {
+    rowptr[i] += rowptr[i-1]; 
+  }
+  assert(rowptr[0] == 0);
+  assert(rowptr[m_nrows] == m_nnz);
+
+  // at this point we have a rowptr ready for insertion, and all triplets
+  // stored in memory --  
+
+  // determine the source of each nz in the 'rows' variable
+  std::vector<ind_t> source(m_nnz);
+  for (ind_t nnz = 0; nnz < m_nnz; ++nnz) {
+    ind_t const dest = rowptr[rows[nnz]]++;
+    source[dest] = nnz;
+  }
+
+  // we now need to sort the rowind and rowval arrays
+
+  // re-use rows to swap out rowind -- copy rowind over and then use source to
+  // copy it back
+  rows.assign(rowind, rowind+m_nnz);
+  for (nnz = 0; nnz < m_nnz; ++nnz) {
+    ind_t const src = source[nnz];
+    rowind[nnz] = rows[src];
+  }
+  // throw away rows
+  std::vector<dim_t>().swap(rows);
+
+  // copy over rowval
+  std::vector<val_t> vals(rowval, rowval+m_nnz);
+  for (nnz = 0; nnz < m_nnz; ++nnz) {
+    ind_t const src = source[nnz];
+    rowval[nnz] = vals[src];
+  }
+
+  // throw away vals
+  std::vector<val_t>().swap(vals);
+
+  // shift
+  for (ind_t i = m_nrows; i > 0; --i) {
+    rowptr[i] = rowptr[i-1]; 
+  }
+  rowptr[0] = 0;
+
+  assert(rowptr[m_nrows] == m_nnz);
 }
 
 

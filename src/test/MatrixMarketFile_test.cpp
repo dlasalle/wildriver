@@ -92,7 +92,7 @@ std::vector<dim_t> rowindSymmetric{
 
 std::vector<val_t> rowvalSymmetric{
   1, 2,
-  2, 4, -1,
+  2, 4, 8,
   5,
   8, 9
 };
@@ -108,16 +108,29 @@ void writeInitialSymmetric(
   f << "%=======================================================" << std::endl;
 
   dim_t nrows = static_cast<dim_t>(rowptrSymmetric.size()-1);
-  ind_t nnz = static_cast<ind_t>(rowptrSymmetric[nrows]);
 
-  f << nrows << " " << nrows << " " << nnz << std::endl;
+  // nnz should be what's listed, not whats implicitly there
+  ind_t listedNNZ = 0;
+  for (dim_t row = 0; row < nrows; ++row) {
+    for (ind_t colIdx = rowptrSymmetric[row]; colIdx < rowptrSymmetric[row+1];
+        ++colIdx) {
+      dim_t col = rowindSymmetric[colIdx];
+      if (col <= row) {
+      ++listedNNZ;
+      }
+    }
+  }
+
+  f << nrows << " " << nrows << " " << listedNNZ << std::endl;
 
   for (dim_t row = 0; row < nrows; ++row) {
     for (ind_t colIdx = rowptrSymmetric[row]; colIdx < rowptrSymmetric[row+1];
         ++colIdx) {
       dim_t col = rowindSymmetric[colIdx];
-      f << " " << (row+1) << " " << (col+1) << " " <<
-          rowvalSymmetric[colIdx] << std::endl;
+      if (col <= row) {
+        f << " " << (row+1) << " " << (col+1) << " " <<
+            rowvalSymmetric[colIdx] << std::endl;
+      }
     }
   }
 }
@@ -173,6 +186,44 @@ void readTestGeneral(
   }
 }
 
+void readTestSymmetric(
+    std::string const & testFile)
+{
+  MatrixMarketFile mm(testFile);
+
+  wildriver_dim_t nrows, ncols;
+  wildriver_ind_t nnz;
+
+  mm.getInfo(nrows,ncols,nnz);
+
+  testEquals(nrows,rowptrSymmetric.size()-1);
+  testEquals(ncols,rowptrSymmetric.size()-1);
+  testGreaterThanOrEqual(nnz,rowptrSymmetric[nrows]);
+
+  std::unique_ptr<wildriver_ind_t[]> rowptr(new wildriver_ind_t[nrows+1]);
+  std::unique_ptr<wildriver_dim_t[]> rowind(new wildriver_dim_t[nnz]);
+  std::unique_ptr<wildriver_val_t[]> rowval(new wildriver_val_t[nnz]);
+
+  mm.read(rowptr.get(),rowind.get(),rowval.get(),nullptr);
+
+  // test rowptr
+  for (dim_t i = 0; i < rowptrSymmetric.size(); ++i) {
+    testEquals(rowptr[i], rowptrSymmetric[i]);
+  }
+
+  // test rowind
+  for (ind_t i = 0; i < rowindSymmetric.size(); ++i) {
+    testEquals(rowind[i], rowindSymmetric[i]);
+  }
+
+  // test rowval
+  for (ind_t i = 0; i < rowvalSymmetric.size(); ++i) {
+    testEquals(rowval[i], rowvalSymmetric[i]);
+  }
+}
+
+
+
 }
 
 void Test::run()
@@ -192,22 +243,15 @@ void Test::run()
     removeFile(testFile);
   }
 
-/*
   // symmetric test
   {
     std::string testFile("/tmp/MatrixMarketSymmetric_test.mtx");
 
     writeInitialSymmetric(testFile);
-    readTest(testFile);
-
-    removeFile(testFile);
-
-    writeTest(testFile);
-    readTest(testFile);
+    readTestSymmetric(testFile);
 
     removeFile(testFile);
   }
-  */
 }
 
 
