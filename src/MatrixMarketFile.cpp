@@ -55,6 +55,13 @@ enum matrix_market_attributes {
 };
 
 
+enum matrix_market_symmetric_orientation {
+  ORIENTATION_UNKNOWN,
+  ORIENTATION_LOWER,
+  ORIENTATION_UPPER
+};
+
+
 std::string const BASE_HEADER("%%MatrixMarket");
 
 
@@ -539,6 +546,7 @@ void MatrixMarketFile::readSymmetricCoordinates(
   // make these large enough to hold whatever value is in the file
   int64_t row, col;
   val_t value;
+  int orientation = ORIENTATION_UNKNOWN;
 
   // TODO: Avoiding the excess memory is more tricky here than for the
   // 'general' case, as even if the nnz's are in order, the correspodning
@@ -588,17 +596,32 @@ void MatrixMarketFile::readSymmetricCoordinates(
     if (col <= 0) {
       throw BadFileException(std::string("Invalid column ") + \
           std::to_string(col) + std::string(" must be 1-based indexing."));
-    } else if (col > row+1) {
-      // invalid for symmetric
-      throw BadFileException(std::string("Non-zero in upper triangle: (") + \
-          std::to_string(row) + std::string(", ") + std::to_string(col) + \
-          std::string(")."));
     } else if (col > m_ncols) {
       throw BadFileException(std::string("Invalid column ") + \
           std::to_string(col) + std::string(" exceeds total columns ") + \
           std::to_string(m_ncols) + std::string("."));
     }
     --col;
+
+    // handle symmetry
+    if (orientation == ORIENTATION_UNKNOWN) {
+      // if we're off diagonal, set orienation
+      if (col > row) {
+        orientation = ORIENTATION_UPPER;
+      } else if (col < row) {
+        orientation = ORIENTATION_LOWER;
+      }
+    } else if (orientation == ORIENTATION_LOWER && col > row) {
+      // invalid for symmetric
+      throw BadFileException(std::string("Non-zero in upper triangle: (") + \
+          std::to_string(row) + std::string(", ") + std::to_string(col) + \
+          std::string(") when lower triangle non-zeros have been found."));
+    } else if (orientation == ORIENTATION_UPPER && col < row) {
+      // invalid for symmetric
+      throw BadFileException(std::string("Non-zero in lower triangle: (") + \
+          std::to_string(row) + std::string(", ") + std::to_string(col) + \
+          std::string(") when upper triangle non-zeros have been found."));
+    }
 
     rows[nnz] = static_cast<dim_t>(row);
     rowind[nnz] = static_cast<dim_t>(col);

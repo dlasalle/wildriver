@@ -98,7 +98,8 @@ std::vector<val_t> rowvalSymmetric{
 };
 
 void writeInitialSymmetric(
-    std::string const & testFile)
+    std::string const & testFile,
+    bool const upper)
 {
   std::ofstream f(testFile);
 
@@ -127,7 +128,7 @@ void writeInitialSymmetric(
     for (ind_t colIdx = rowptrSymmetric[row]; colIdx < rowptrSymmetric[row+1];
         ++colIdx) {
       dim_t col = rowindSymmetric[colIdx];
-      if (col <= row) {
+      if ((!upper && col <= row) || (upper && col >= row)) {
         f << " " << (row+1) << " " << (col+1) << " " <<
             rowvalSymmetric[colIdx] << std::endl;
       }
@@ -223,7 +224,6 @@ void readTestSymmetric(
 }
 
 
-
 }
 
 void Test::run()
@@ -243,15 +243,26 @@ void Test::run()
     removeFile(testFile);
   }
 
-  // symmetric test
+  // lower symmetric test
   {
-    std::string testFile("/tmp/MatrixMarketSymmetric_test.mtx");
+    std::string testFile("/tmp/MatrixMarketSymmetricLower_test.mtx");
 
-    writeInitialSymmetric(testFile);
+    writeInitialSymmetric(testFile, false);
     readTestSymmetric(testFile);
 
     removeFile(testFile);
   }
+
+  // upper symmetric test
+  {
+    std::string testFile("/tmp/MatrixMarketSymmetricUpper_test.mtx");
+
+    writeInitialSymmetric(testFile, true);
+    readTestSymmetric(testFile);
+
+    removeFile(testFile);
+  }
+
 }
 
 
