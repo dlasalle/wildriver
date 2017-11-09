@@ -7,6 +7,7 @@ compiler:
   - clang
   - gcc
 script:
+  - "./configure --debug --devel --test && make && make test"
   - "./configure --test && make && make test"
   - "./configure --test --index-type=int64_t --dimension-type=uint64_t && make && make test"
   - "./configure --test --index-type=uint64_t --dimension-type=uint32_t && make && make test"

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.6)
 project(WILDRIVER)
 
 if (DEFINED DEBUG)
@@ -59,8 +59,11 @@ else()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11") 
 endif()
 
-# use gnu directories
-include(GNUInstallDirs)
+
+if (NOT _WIN32)
+  # use gnu directories
+  include(GNUInstallDirs)
+endif()
 
 # must be before including src
 if (DEFINED TESTS AND NOT TESTS EQUAL 0)

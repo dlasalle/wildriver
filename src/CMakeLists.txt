@@ -6,6 +6,11 @@ add_library(wildriver ${WILDRIVER_LIBRARY_TYPE}
   ${sources}
 ) 
 
+if (_WIN32)
+  # export dll
+  generate_export_header(wildriver)
+endif()
+
 install(TARGETS wildriver
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
