@@ -8,7 +8,8 @@ add_library(wildriver ${WILDRIVER_LIBRARY_TYPE}
 
 if (_WIN32)
   # export dll
-  generate_export_header(wildriver)
+  cmake_minimum_required(VERSION 3.4)
+  set_target_properties(wildriver PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS 1)
 endif()
 
 install(TARGETS wildriver
