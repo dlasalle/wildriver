@@ -441,6 +441,9 @@ void MatrixMarketFile::readCoordinates(
     rowptr[i] = 0;
   }
 
+  dim_t const interval = m_nnz > 100 ? m_nnz / 100 : 1;
+  double const increment = 1.0/100.0;
+
   // count non-zeros per row
   for (ind_t nnz = 0; nnz < m_nnz; ++nnz) {
     if (!nextNoncommentLine(m_line)) {
@@ -486,6 +489,10 @@ void MatrixMarketFile::readCoordinates(
     rowval[nnz] = value;
 
     ++rowptr[row+1];
+
+    if (progress != nullptr && nnz % interval == 0) {
+      *progress += increment;
+    }
   }
 
   // prefix sum rows in the second row
@@ -563,7 +570,13 @@ void MatrixMarketFile::readSymmetricCoordinates(
 
   // count non-zeros per row
   ind_t nnz = 0;
+  // we doubled the nnz when reading the header, so halving it hear for the
+  // number of lines is safe
   ind_t nlines = m_nnz / 2;
+
+  dim_t const interval = nlines > 100 ? nlines / 100 : 1;
+  double const increment = 1.0/100.0;
+
   for (ind_t line = 0; line < nlines; ++line) {
     if (!nextNoncommentLine(m_line)) {
       throw BadFileException(std::string("Only found ") + \
@@ -638,6 +651,10 @@ void MatrixMarketFile::readSymmetricCoordinates(
 
       ++rowptr[col+1];
       ++nnz;
+    }
+
+    if (progress != nullptr && line % interval == 0) {
+      *progress += increment;
     }
   }
   // set proper nnz count
