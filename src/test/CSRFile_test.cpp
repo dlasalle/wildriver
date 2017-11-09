@@ -112,7 +112,7 @@ static void readTest(
 
 void Test::run()
 {
-  std::string testFile("/tmp/CSRFile_test.csr");
+  std::string testFile("./CSRFile_test.csr");
 
   writeTest(testFile);
   readTest(testFile);

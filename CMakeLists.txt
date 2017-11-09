@@ -1,4 +1,10 @@
-cmake_minimum_required(VERSION 3.4)
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+  message("Configuring for MSVC")
+  cmake_minimum_required(VERSION 3.4)
+else()
+  cmake_minimum_required(VERSION 2.8)
+endif()
+
 project(WILDRIVER)
 
 if (DEFINED DEBUG)

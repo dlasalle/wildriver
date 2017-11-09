@@ -340,25 +340,25 @@ static void readGraph_deprecated(
 
 void Test::run()
 {
-  std::string const csrFile("/tmp/wildriver_test.csr");
+  std::string const csrFile("./wildriver_test.csr");
   writeMatrix(csrFile);
   readMatrix(csrFile);
 
   removeFile(csrFile);
 
-  std::string const mmFile("/tmp/wildriver_test.mtx");
+  std::string const mmFile("./wildriver_test.mtx");
   writeMatrix(mmFile);
   readMatrix(mmFile);
 
   removeFile(mmFile);
 
-  std::string const graphFile("/tmp/wildriver_test.graph");
+  std::string const graphFile("./wildriver_test.graph");
   writeMatrix(graphFile);
   readMatrix(graphFile);
 
   removeFile(graphFile);
 
-  std::string const vectorFile("/tmp/wildriver_test.txt");
+  std::string const vectorFile("./wildriver_test.txt");
   writeVector(vectorFile);
   readVector(vectorFile);
 
@@ -367,18 +367,18 @@ void Test::run()
   // test deprecated interface
 
   // test metis
-  writeMatrix_deprecated("/tmp/wildriver_test.graph");
-  readMatrix_deprecated("/tmp/wildriver_test.graph");
+  writeMatrix_deprecated("./wildriver_test.graph");
+  readMatrix_deprecated("./wildriver_test.graph");
 
-  writeGraph_deprecated("/tmp/wildriver_test.graph");
-  readGraph_deprecated("/tmp/wildriver_test.graph");
+  writeGraph_deprecated("./wildriver_test.graph");
+  readGraph_deprecated("./wildriver_test.graph");
 
   // test csr
-  writeMatrix_deprecated("/tmp/wildriver_test.csr");
-  readMatrix_deprecated("/tmp/wildriver_test.csr");
+  writeMatrix_deprecated("./wildriver_test.csr");
+  readMatrix_deprecated("./wildriver_test.csr");
 
-  writeGraph_deprecated("/tmp/wildriver_test.csr");
-  readGraph_deprecated("/tmp/wildriver_test.csr");
+  writeGraph_deprecated("./wildriver_test.csr");
+  readGraph_deprecated("./wildriver_test.csr");
 }
 
 

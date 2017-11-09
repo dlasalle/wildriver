@@ -115,12 +115,12 @@ static void readMetis(
 void Test::run()
 {
   // generate test metis file
-  std::string metisFile("/tmp/MatrixOutHandle_test.graph");
+  std::string metisFile("./MatrixOutHandle_test.graph");
   writeSparse(metisFile);
   readMetis(metisFile);
 
   // generate test csr file
-  std::string csrFile("/tmp/MatrixOutHandle_test.csr");
+  std::string csrFile("./MatrixOutHandle_test.csr");
   writeSparse(csrFile);
   readSparse(csrFile);
 }

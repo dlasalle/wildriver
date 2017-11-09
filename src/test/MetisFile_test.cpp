@@ -98,7 +98,7 @@ static void readTest(
 
 void Test::run()
 {
-  std::string testFile("/tmp/metis_test.graph");
+  std::string testFile("./metis_test.graph");
 
   writeTest(testFile);
   readTest(testFile);
