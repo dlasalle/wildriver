@@ -21,10 +21,10 @@ before_build:
 build_script:
   - cd build-release
   - cmake --build . --config Release
-  - ctest . -C Release
+  - ctest . -C Release --output-on-failure
   - cd ../
   - cd build-debug
   - cmake --build . --config Debug
-  - ctest . -C Debug
+  - ctest . -C Debug --output-on-failure
   - cd ../
 
