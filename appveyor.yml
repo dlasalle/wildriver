@@ -18,13 +18,18 @@ environment:
 
 
 before_build:
-  - md build
-  - cd build
-  - cmake -G "Visual Studio %VS_VERSION%" -DCMAKE_VERBOSE_MAKEFILE=1 ../
+  - md build-release
+  - cd build-release
+  - cmake -G "Visual Studio %VS_VERSION%" -DCMAKE_VERBOSE_MAKEFILE=1 --config Release ../
+  - md build-debug
+  - cd build-debug
+  - cmake -G "Visual Studio %VS_VERSION%" -DCMAKE_VERBOSE_MAKEFILE=1 --config debug ../
 
-build:
-  - cmake --build . --config Release
+build_script:
+  - cd build-release
+  - cmake --build .
   - ctest
-  - cmake --build . --config Debug
+  - cd ../build-debug
+  - cmake --build .
   - ctest
 
