@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.6)
+cmake_minimum_required(VERSION 3.4)
 project(WILDRIVER)
 
 if (DEFINED DEBUG)
@@ -64,6 +64,9 @@ if (NOT _WIN32)
   # use gnu directories
   include(GNUInstallDirs)
 endif()
+
+# will have no effect when not compiling in windows
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 # must be before including src
 if (DEFINED TESTS AND NOT TESTS EQUAL 0)
