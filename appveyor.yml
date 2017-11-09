@@ -1,9 +1,5 @@
 version: "build-{build}"
 
-configuration:
-- Debug
-- Release
-
 environment:
   matrix:
   - VS_VERSION: 14
@@ -20,16 +16,20 @@ environment:
 before_build:
   - md build-release
   - cd build-release
-  - cmake -G "Visual Studio %VS_VERSION%" -DCMAKE_VERBOSE_MAKEFILE=1 --config Release ../
+  - cmake -G "Visual Studio %VS_VERSION%" -DCMAKE_VERBOSE_MAKEFILE=1
+  - cd ../
   - md build-debug
   - cd build-debug
-  - cmake -G "Visual Studio %VS_VERSION%" -DCMAKE_VERBOSE_MAKEFILE=1 --config debug ../
+  - cmake -G "Visual Studio %VS_VERSION%" -DCMAKE_VERBOSE_MAKEFILE=1 -DDEBUG=1
+  - cd ../
 
 build_script:
   - cd build-release
   - cmake --build .
   - ctest
-  - cd ../build-debug
+  - cd ../
+  - cd build-debug
   - cmake --build .
   - ctest
+  - cd ../
 
