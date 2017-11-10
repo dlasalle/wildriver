@@ -8,6 +8,11 @@ endfunction()
 
 include_directories(.)
 
+if(WIN32)
+  set(ENV{PATH} "$ENV{PATH}:${CMAKE_RUNTIME_OUTPUT_PATH}")
+  set(ENV{PATH} "$ENV{PATH}:${CMAKE_LIBRARY_OUTPUT_PATH}")
+  set(ENV{PATH} "$ENV{PATH}:${CMAKE_ARCHIVE_OUTPUT_PATH}")
+endif()
 
 file(GLOB files "*_test.cpp")
 foreach(file ${files})
