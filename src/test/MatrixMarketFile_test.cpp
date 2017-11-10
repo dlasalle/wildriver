@@ -235,12 +235,12 @@ void Test::run()
     writeInitialGeneral(testFile);
     readTestGeneral(testFile);
 
-    removeFile(testFile);
+    Test::removeFile(testFile);
 
     writeTestGeneral(testFile);
     readTestGeneral(testFile);
 
-    removeFile(testFile);
+    Test::removeFile(testFile);
   }
 
   // lower symmetric test
@@ -250,7 +250,7 @@ void Test::run()
     writeInitialSymmetric(testFile, false);
     readTestSymmetric(testFile);
 
-    removeFile(testFile);
+    Test::removeFile(testFile);
   }
 
   // upper symmetric test
@@ -260,7 +260,7 @@ void Test::run()
     writeInitialSymmetric(testFile, true);
     readTestSymmetric(testFile);
 
-    removeFile(testFile);
+    Test::removeFile(testFile);
   }
 
 }

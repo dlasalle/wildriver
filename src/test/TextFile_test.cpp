@@ -90,7 +90,7 @@ void Test::run()
   writeTest(testFile);
   readTest(testFile);
 
-  removeFile(testFile);
+  Test::removeFile(testFile);
 }
 
 

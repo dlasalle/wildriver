@@ -20,12 +20,6 @@
 
 
 
-static size_t const NVTXS = 6;
-static size_t const NEDGES = 7;
-
-
-
-
 using namespace WildRiver;
 
 

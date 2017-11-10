@@ -344,25 +344,25 @@ void Test::run()
   writeMatrix(csrFile);
   readMatrix(csrFile);
 
-  removeFile(csrFile);
+  Test::removeFile(csrFile);
 
   std::string const mmFile("./wildriver_test.mtx");
   writeMatrix(mmFile);
   readMatrix(mmFile);
 
-  removeFile(mmFile);
+  Test::removeFile(mmFile);
 
   std::string const graphFile("./wildriver_test.graph");
   writeMatrix(graphFile);
   readMatrix(graphFile);
 
-  removeFile(graphFile);
+  Test::removeFile(graphFile);
 
   std::string const vectorFile("./wildriver_test.txt");
   writeVector(vectorFile);
   readVector(vectorFile);
 
-  removeFile(vectorFile);
+  Test::removeFile(vectorFile);
 
   // test deprecated interface
 
