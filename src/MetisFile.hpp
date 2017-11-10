@@ -108,7 +108,7 @@ class MetisFile :
         ind_t const * xadj,
         dim_t const * adjncy,
         val_t const * vwgt,
-        val_t const * adjwgt);
+        val_t const * adjwgt) override;
 
 
     /**
@@ -124,7 +124,7 @@ class MetisFile :
         dim_t nvtxs,
         ind_t nedges,
         int nvwgt,
-        bool ewgts);
+        bool ewgts) override;
 
 
 

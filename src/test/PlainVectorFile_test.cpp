@@ -33,7 +33,7 @@ namespace DomTest
 static void writeTest(
     std::string const & testFile)
 {
-  removeFile(testFile);
+  Test::removeFile(testFile);
 
   PlainVectorFile vec(testFile);
 
@@ -74,12 +74,12 @@ static void readTest(
 
 void Test::run()
 {
-  std::string testFile("/tmp/test.vec");
+  std::string testFile("./test.vec");
 
   writeTest(testFile);
   readTest(testFile);
 
-  removeFile(testFile);
+  Test::removeFile(testFile);
 }
 
 

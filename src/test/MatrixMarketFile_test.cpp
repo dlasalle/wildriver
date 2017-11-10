@@ -230,37 +230,37 @@ void Test::run()
 {
   // general test
   {
-    std::string testFile("/tmp/MatrixMarketGeneral_test.mtx");
+    std::string testFile("./MatrixMarketGeneral_test.mtx");
 
     writeInitialGeneral(testFile);
     readTestGeneral(testFile);
 
-    removeFile(testFile);
+    Test::removeFile(testFile);
 
     writeTestGeneral(testFile);
     readTestGeneral(testFile);
 
-    removeFile(testFile);
+    Test::removeFile(testFile);
   }
 
   // lower symmetric test
   {
-    std::string testFile("/tmp/MatrixMarketSymmetricLower_test.mtx");
+    std::string testFile("./MatrixMarketSymmetricLower_test.mtx");
 
     writeInitialSymmetric(testFile, false);
     readTestSymmetric(testFile);
 
-    removeFile(testFile);
+    Test::removeFile(testFile);
   }
 
   // upper symmetric test
   {
-    std::string testFile("/tmp/MatrixMarketSymmetricUpper_test.mtx");
+    std::string testFile("./MatrixMarketSymmetricUpper_test.mtx");
 
     writeInitialSymmetric(testFile, true);
     readTestSymmetric(testFile);
 
-    removeFile(testFile);
+    Test::removeFile(testFile);
   }
 
 }

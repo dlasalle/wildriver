@@ -4,8 +4,13 @@
   <img src="https://travis-ci.org/dlasalle/wildriver.svg?branch=master"/>
 </a>
 
+
+<a href="https://ci.appveyor.com/project/dlasalle/wildriver">
+  <img src="https://ci.appveyor.com/api/projects/status/1ugx93e61mumbb8d?svg=true"/>
+</a>
+
 <a href='http://wildriver.readthedocs.io/en/latest/?badge=latest'>
-    <img src='https://readthedocs.org/projects/wildriver/badge/?version=latest' alt='Documentation Status' />
+  <img src='https://readthedocs.org/projects/wildriver/badge/?version=latest' alt='Documentation Status' />
 </a>
 
 Library for reading and writing sparse matrices and graphs.

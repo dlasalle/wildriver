@@ -85,12 +85,12 @@ static void readTest(
 
 void Test::run()
 {
-  std::string testFile("/tmp/test.txt");
+  std::string testFile("./test.txt");
 
   writeTest(testFile);
   readTest(testFile);
 
-  removeFile(testFile);
+  Test::removeFile(testFile);
 }
 
 

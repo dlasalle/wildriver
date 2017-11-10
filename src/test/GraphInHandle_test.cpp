@@ -20,12 +20,6 @@
 
 
 
-static size_t const NVTXS = 6;
-static size_t const NEDGES = 7;
-
-
-
-
 using namespace WildRiver;
 
 
@@ -134,11 +128,11 @@ static void readSparse(
 void Test::run()
 {
   // generate test metis file
-  std::string metisFile("/tmp/MatrixInHandle_test.graph");
+  std::string metisFile("./MatrixInHandle_test.graph");
   writeMetis(metisFile);
   readSparse(metisFile);
 
-  std::string csrFile("/tmp/MatrixInHandle_test.csr");
+  std::string csrFile("./MatrixInHandle_test.csr");
   writeSparse(csrFile);
   readSparse(csrFile);
 }

@@ -91,20 +91,20 @@ class TestFailed : public std::logic_error
 ******************************************************************************/
 
 
-static void removeFile(
-    std::string const & file)
-{
-  remove(file.c_str());
-}
-
-
 class Test
 {
   protected:
     void run();
 
 
+
   public:
+    static void removeFile(
+        std::string const & file)
+    {
+      remove(file.c_str());
+    }
+
     Test()
     {
     };

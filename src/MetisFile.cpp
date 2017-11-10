@@ -98,10 +98,10 @@ bool MetisFile::isComment(
   // awful solution since I can't declare this statically in c++ -- at
   // somepoint generate all 256 entries using template programming
   bool comment_chars[256] = {false};
-  comment_chars['#'] = true;
-  comment_chars['%'] = true;
-  comment_chars['"'] = true;
-  comment_chars['/'] = true;
+  comment_chars[static_cast<size_t>('#')] = true;
+  comment_chars[static_cast<size_t>('%')] = true;
+  comment_chars[static_cast<size_t>('"')] = true;
+  comment_chars[static_cast<size_t>('/')] = true;
 
   return line.size() > 0 && comment_chars[static_cast<uint8_t>(line[0])];
 }
