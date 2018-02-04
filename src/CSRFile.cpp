@@ -121,6 +121,7 @@ bool CSRFile::nextNoncommentLine(
 
 CSRFile::CSRFile(
     std::string const & fname) :
+  m_oneBased(false),
   m_line(BUFFER_SIZE,'\0'),
   m_file(fname),
   m_decoder(nullptr),
@@ -209,8 +210,10 @@ void CSRFile::readHeader(
   // go to the start of the file
   m_file.resetStream();
 
+  dim_t minColumn = NULL_DIM;
+  dim_t maxColumn = 0;
+
   numRows = 0;
-  numCols = 0;
   nnz = 0;
 
   while (nextNoncommentLine(m_line)) {
@@ -229,8 +232,11 @@ void CSRFile::readHeader(
         break;
       }
 
-      if (col > numCols) {
-        numCols = col;
+      if (col > maxColumn) {
+        maxColumn = col;
+      }
+      if (minColumn == NULL_DIM || col < minColumn) {
+        minColumn = col;
       }
 
       // skip value without converting
@@ -244,8 +250,16 @@ void CSRFile::readHeader(
     ++numRows;
   }
 
-  // assume we started counting at 0
-  ++numCols;
+  // decide where we started counting
+  if (minColumn > 0) {
+    // 1-based
+    numCols = maxColumn;
+    m_oneBased = true;
+  } else {
+    // 0-based
+    m_oneBased = false;
+    numCols = maxColumn+1;
+  }
 
   // go back to the start
   m_file.resetStream();
@@ -265,6 +279,8 @@ void CSRFile::getNextRow(
   // TOOD: don't cast constness away
   char * sptr;
   char * eptr = (char*)m_line.data();
+
+  const dim_t offset = m_oneBased ? 1 : 0;
 
   dim_t degree = 0;
   dim_t col;
@@ -287,7 +303,7 @@ void CSRFile::getNextRow(
             "line ") + std::to_string(m_file.getCurrentLine()));
     }
 
-    columns[degree] = col;
+    columns[degree] = col - offset;
     if (values) {
       values[degree] = val;
     }
@@ -314,12 +330,15 @@ void CSRFile::setNextRow(
     val_t const * const values)
 {
   std::stringstream streamBuffer;
+
+  const dim_t offset = m_oneBased ? 1 : 0;
+
   if (numNonZeros > 0) {
     const size_t last = numNonZeros - 1;
     for (size_t i = 0; i < last; ++i) {
-      streamBuffer << (columns[i]) << " " << values[i] << " ";
+      streamBuffer << (columns[i]+offset) << " " << values[i] << " ";
     }
-    streamBuffer << (columns[last]) << " " << values[last];
+    streamBuffer << (columns[last]+offset) << " " << values[last];
   }
 
   m_file.setNextLine(streamBuffer.str());
