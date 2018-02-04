@@ -192,6 +192,11 @@ class CSRFile :
 
   private:
     /**
+    * @brief Whether or not the file has 1-based column indexes.
+    */
+    bool m_oneBased;
+
+    /**
      * @brief A buffer for reading each line.
      */
     std::string m_line;
