@@ -45,6 +45,27 @@ void SNAPFile::writeHeader()
   }
 }
 
+void SNAPFile::readHeader()
+{
+  if (!m_file.isOpenRead()) {
+    // open our file for reading if not already
+    m_file.openRead();
+  }
+
+  // get the first line
+  std::string line;
+  if (!m_file.nextLine(line)) {
+    throw 
+  }
+
+  // default weight information uncase its not preset
+  m_hasEdgeWeights = false;
+
+  m_numVertices =
+  m_numEdges =
+
+
+}
 
 /******************************************************************************
 * CONSTRUCTORS / DESTRUCTOR ***************************************************
@@ -91,6 +112,14 @@ void SNAPFile::getInfo(
     int & nvwgt,
     bool & ewgts)
 {
+  readHeader();
+
+  nvtxs = m_numVertices;
+  nedges = m_numEdges;
+  nvwgt = 0;
+  ewgts = m_hasEdgeWeights;
+
+  m_infoSet(true);
 }
 
 
