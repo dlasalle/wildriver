@@ -1,8 +1,8 @@
 /**
  * @file CSREncoder.hpp
- * @brief Class for writing matrix row by row from a CSR data structure.
+ * @brief The CSREncoder class.
  * @author Dominique LaSalle <dominique@solidlake.com>
- * Copyright 2017, Solid Lake LLC
+ * Copyright 2017-2018
  * @version 1
  * @date 2017-07-26
  */
@@ -16,10 +16,8 @@
 
 
 
-#include <memory>
-
-
 #include "IRowMatrixWriter.hpp"
+#include <memory>
 
 
 
@@ -28,6 +26,9 @@ namespace WildRiver
 {
 
 
+/**
+* @brief A class for writing matrix row by row from a CSR data structure
+*/
 class CSREncoder
 {
   public:

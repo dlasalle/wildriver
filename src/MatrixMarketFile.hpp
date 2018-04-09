@@ -30,6 +30,10 @@ namespace WildRiver
 {
 
 
+/**
+* @brief A class for reading and writing matrices stored in MatrixMarket
+* format (https://math.nist.gov/MatrixMarket/formats.html).
+*/
 class MatrixMarketFile :
     public IMatrixReader,
     public IMatrixWriter

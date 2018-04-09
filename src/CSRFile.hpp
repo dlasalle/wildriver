@@ -1,8 +1,8 @@
 /**
  * @file CSRFile.hpp
- * @brief Class for reading/writing metis files.
+ * @brief The CSRFile class.
  * @author Dominique LaSalle <wildriver@domnet.org>
- * Copyright 2015-2016
+ * Copyright 2015-2018
  * @version 1
  *
  */
@@ -16,9 +16,6 @@
 
 
 
-#include <memory>
-
-
 #include "IMatrixReader.hpp"
 #include "IMatrixWriter.hpp"
 #include "IRowMatrixReader.hpp"
@@ -26,6 +23,7 @@
 #include "CSRDecoder.hpp"
 #include "CSREncoder.hpp"
 #include "TextFile.hpp"
+#include <memory>
 
 
 
@@ -33,6 +31,9 @@
 namespace WildRiver {
 
 
+/**
+* @brief A class for reading and writing plain text CSR files.
+*/
 class CSRFile :
     public IMatrixReader,
     public IMatrixWriter,
