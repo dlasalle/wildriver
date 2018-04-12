@@ -11,7 +11,7 @@
 
 
 #include "CoordinateWriter.hpp"
-
+#include "TextFile.hpp"
 
 
 
@@ -26,6 +26,7 @@ namespace WildRiver
 
 CoordinateWriter::CoordinateWriter(
     TextFile * const file) :
+  m_numWrittenRows(0),
   m_file(file)
 {
   // do nothing
@@ -37,7 +38,7 @@ CoordinateWriter::CoordinateWriter(
 * PUBLIC METHODS **************************************************************
 ******************************************************************************/
 
-void writeHeader(
+void CoordinateWriter::writeHeader(
       dim_t,
       dim_t,
       ind_t)
@@ -52,13 +53,18 @@ void CoordinateWriter::setNextRow(
     dim_t const * const columns,
     val_t const * const values)
 {
-  for (ind_type j = 0; j < numNonZeros; ++j) {
+  std::string const rowStr(std::to_string(m_numWrittenRows) + \
+      std::string(" "));
+  for (ind_t j = 0; j < numNonZeros; ++j) {
     if (values != nullptr) {
-      m_file.setNextLine(rowStr + " " + std::to_string(columns[j]) + " " + std::to_string(values[j]));
+      m_file->setNextLine(rowStr + " " + std::to_string(columns[j]) + " " + \
+          std::to_string(values[j]));
     } else {
-      m_file.setNextLine(rowStr + " " + std::to_string(columns[j]));
+      m_file->setNextLine(rowStr + " " + std::to_string(columns[j]));
     }
   }
+
+  ++m_numWrittenRows;
 }
 
 

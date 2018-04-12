@@ -175,6 +175,12 @@ class SNAPFile :
 
 
     /**
+    * @brief Whether or not the graph is directed.
+    */
+    bool m_directed;
+
+
+    /**
      * @brief Line buffer.
      */
     std::string m_line;
@@ -184,17 +190,6 @@ class SNAPFile :
      * @brief The underlying text file.
      */
     TextFile m_file;
-
-
-    /**
-     * @brief Determine if teh given line is a comment.
-     *
-     * @param line The line.
-     *
-     * @return True if the line is a comment.
-     */
-    virtual bool isComment(
-        std::string const & line) const noexcept;
 
 
     /**
@@ -220,43 +215,6 @@ class SNAPFile :
      * internal fields set by "setInfo()".
      */
     virtual void writeHeader(); 
-
-
-    /**
-     * @brief Reset the current position in the graph to the first vertex.
-     */
-    virtual void firstVertex();
-
-
-    /**
-     * @brief Get the information of the next vertex.
-     *
-     * @param vertexWeights The vertex weight(s) (must be null or at least of
-     * length equal to the number of constraints).
-     * @param numEdges The number of edges incident to this vertex (output).
-     * @param edgeDests The destination of each edge leaving this vertex (must
-     * be of length equal to the number of edges of the vertex).
-     * @param edgeWeights The weight of each edge leaving this vertex (must
-     * null or be of length equal to the number of edges of the vertex).
-     *
-     * @return True if another vertex was found in the file.
-     */
-    virtual bool getNextVertex(
-        val_t * vertexWeights,
-        dim_t * numEdges,
-        dim_t * edgeDests,
-        val_t * edgeWeights);
-
-
-    /**
-     * @brief Set the adjacency list and vertex weight of the next vertex.
-     *
-     * @param vwgts The vertex weights for this vertex.
-     * @param list The adjacecny list.
-     */
-    virtual void setNextVertex(
-        std::vector<val_t> const & vwgts,
-        std::vector<matrix_entry_struct> const & list);
 
 
 

@@ -17,7 +17,6 @@
 
 
 #include "IRowMatrixWriter.hpp"
-#include "Text.File.hpp"
 #include <memory>
 
 
@@ -26,6 +25,8 @@
 namespace WildRiver
 {
 
+
+class TextFile;
 
 
 /**
@@ -48,6 +49,24 @@ class CoordinateWriter : public IRowMatrixWriter
     CoordinateWriter(
         TextFile * file);
 
+    /**
+    * @brief Deleteted copy constructor.
+    *
+    * @param rhs The writer to copy.
+    */
+    CoordinateWriter(
+        CoordinateWriter const & rhs) = delete;
+
+    /**
+    * @brief Deleted assignment operator.
+    *
+    * @param rhs The writer to copy.
+    *
+    * @return This writer.
+    */
+    CoordinateWriter& operator=(
+        CoordinateWriter const & rhs) = delete;
+        
 
     /**
      * @brief Write the header of this matrix file. The header consists of
@@ -76,9 +95,14 @@ class CoordinateWriter : public IRowMatrixWriter
 
   private:
     /**
+    * @brief The number of rows written/set.
+    */
+    size_t m_numWrittenRows;
+
+    /**
     * @brief The text file.
     */
-    TextFile m_file;
+    TextFile * m_file;
 
 
 
