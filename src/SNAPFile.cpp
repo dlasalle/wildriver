@@ -83,7 +83,7 @@ std::vector<std::string> split(
 
     chunks.emplace_back(line.substr(start, next-start));
 
-    start = line.find_first_of(whitespace, next);
+    start = line.find_first_not_of(whitespace, next);
   }
 
   return chunks;
@@ -185,8 +185,15 @@ void SNAPFile::writeHeader()
   }
 
   // for now we assume this is an undirected graph
-  m_file.setNextLine(std::string("# Undirected graph (each unordered pair " \
-      "of nodes is saved once): ") + m_file.getFilename()); 
+  if (m_directed) {
+    m_file.setNextLine(DIRECTED_GRAPH_HEADER + \
+        std::string(" (each unordered pair " \
+        "of nodes is saved once): ") + m_file.getFilename()); 
+  } else {
+    m_file.setNextLine(UNDIRECTED_GRAPH_HEADER + \
+        std::string(" (each unordered pair " \
+        "of nodes is saved once): ") + m_file.getFilename()); 
+  }
   m_file.setNextLine("# A graph.");
   m_file.setNextLine(std::string("# Nodes: ") + \
       std::to_string(m_numVertices) + \
@@ -305,35 +312,45 @@ void SNAPFile::read(
 
   // populate xadj
   for (edge_struct const & edge : edges) {
+    if (edge.src >= m_numVertices) {
+      throw BadFileException(std::string("Invalid vertex: ") +
+          std::to_string(edge.src));
+    } else if (edge.dst >= m_numVertices) {
+      throw BadFileException(std::string("Invalid vertex: ") +
+          std::to_string(edge.src));
+    }
     ++xadj[edge.src+1];
     if (!m_directed) {
       ++xadj[edge.dst+1];
     }
   }
 
-  // shift xadj
-  for (dim_t v = m_numVertices; v > 1;) {
-    --v;
+  // shift xadj and prefixsum
+  xadj[0] = 0;
+  for (dim_t v = 1; v <= m_numVertices; ++v) {
+    xadj[v] += xadj[v-1];
+  }
+  for (dim_t v = m_numVertices; v > 0; --v) {
     xadj[v] = xadj[v-1];
   }
-  xadj[0] = 0;
+  assert(xadj[0] == 0);
   
   // fill in edges
   for (edge_struct const & edge : edges) {
-    ind_t const srcIdx = xadj[edge.src];
-    adjncy[srcIdx] = edge.src;
+    ind_t const srcIdx = xadj[edge.src+1];
+    adjncy[srcIdx] = edge.dst;
     if (adjwgt) {
       adjwgt[srcIdx] = edge.weight;
     }
-    ++xadj[edge.src];
+    ++xadj[edge.src+1];
 
     if (!m_directed) {
-      ind_t const dstIdx = xadj[edge.dst];
+      ind_t const dstIdx = xadj[edge.dst+1];
       adjncy[dstIdx] = edge.src;
       if (adjwgt) {
         adjwgt[dstIdx] = edge.weight;
       }
-      ++xadj[edge.dst];
+      ++xadj[edge.dst+1];
     }
   }
   assert(xadj[m_numVertices] == m_numEdges);
@@ -380,12 +397,14 @@ void SNAPFile::write(
 
     // build edges
     for (ind_t j=xadj[i]; j<xadj[i+1]; ++j) {
-      neighbors.emplace_back(adjncy[j]);
-      if (m_hasEdgeWeights) {
-        if (adjwgt) {
-          weights.emplace_back(adjwgt[j]);
-        } else {
-          weights.emplace_back(1);
+      if (m_directed || adjncy[j] <= i) {
+        neighbors.emplace_back(adjncy[j]);
+        if (m_hasEdgeWeights) {
+          if (adjwgt) {
+            weights.emplace_back(adjwgt[j]);
+          } else {
+            weights.emplace_back(1);
+          }
         }
       }
     }
