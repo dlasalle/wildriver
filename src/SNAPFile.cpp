@@ -357,7 +357,7 @@ void SNAPFile::read(
 
   // vertex weights are not part of snap format
   if (vwgt) {
-    for (dim_t v = m_numVertices; v > 1;) {
+    for (dim_t v = m_numVertices; v > 1; ++v) {
       vwgt[v] = 1;
     }
   }
