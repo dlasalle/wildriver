@@ -48,7 +48,7 @@ namespace
 {
 
 const std::string DIRECTED_GRAPH_HEADER("# Directed graph");
-const std::string UNDIRECTED_GRAPH_HEADER("# Unirected graph");
+const std::string UNDIRECTED_GRAPH_HEADER("# Undirected graph");
 const std::string NODES_HEADER("# Nodes: ");
 
 }
@@ -65,7 +65,7 @@ bool startsWith(
     std::string const line,
     std::string const start)
 {
-  return line.compare(0, start.size(), start) == 0;
+  return line.size() >= start.size() && line.compare(0, start.size(), start) == 0;
 }
 
 std::vector<std::string> split(
@@ -261,6 +261,11 @@ void SNAPFile::readHeader()
     } else {
       // do nothing
     }
+  }
+
+  // count undirected edges twice
+  if (!m_directed && m_numEdges != NULL_IND) {
+    m_numEdges *= 2;
   }
   
   // if node and edge counts weren't found, we can still proceed, but need
