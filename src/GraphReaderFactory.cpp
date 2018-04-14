@@ -11,7 +11,7 @@
 
 #include "GraphReaderFactory.hpp"
 #include "MetisFile.hpp"
-#include "CSRFile.hpp"
+#include "SNAPFile.hpp"
 #include "MatrixReaderFactory.hpp"
 #include "MatrixGraphReader.hpp"
 
@@ -34,6 +34,8 @@ std::unique_ptr<IGraphReader> GraphReaderFactory::make(
   // determine what type of reader to instantiate based on extension
   if (MetisFile::hasExtension(name)) {
     file.reset(new MetisFile(name));
+  } else if (SNAPFile::hasExtension(name)) {
+    file.reset(new SNAPFile(name));
   } else {
     // need to wrap it with an adapter
     std::unique_ptr<IMatrixReader> matPtr(MatrixReaderFactory::make(name));

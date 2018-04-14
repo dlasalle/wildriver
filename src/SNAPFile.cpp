@@ -172,6 +172,22 @@ void countVerticesAndEdges(
 
 }
 
+
+/******************************************************************************
+* PUBLIC STATIC FUNCTIONS *****************************************************
+******************************************************************************/
+
+bool SNAPFile::hasExtension(
+    std::string const & f)
+{
+  std::vector<std::string> extensions;
+
+  extensions.push_back(".snap");
+
+  return TextFile::matchExtension(f,extensions);
+}
+
+
 /******************************************************************************
 * PRIVATE METHODS *************************************************************
 ******************************************************************************/
@@ -299,6 +315,9 @@ void SNAPFile::read(
     return;
   }
 
+  dim_t const interval = m_numEdges*2 > 100 ? m_numEdges*2 / 100 : 1;
+  double const increment = 1.0/100.0;
+
   std::string line;
 
   // read in all edges
@@ -311,6 +330,7 @@ void SNAPFile::read(
   }
 
   // populate xadj
+  size_t edgesProcessed = 0;
   for (edge_struct const & edge : edges) {
     if (edge.src >= m_numVertices) {
       throw BadFileException(std::string("Invalid vertex: ") +
@@ -322,6 +342,11 @@ void SNAPFile::read(
     ++xadj[edge.src+1];
     if (!m_directed) {
       ++xadj[edge.dst+1];
+    }
+
+    ++edgesProcessed;
+    if (progress != nullptr && edgesProcessed % interval == 0) {
+      *progress += increment;
     }
   }
 
@@ -351,6 +376,11 @@ void SNAPFile::read(
         adjwgt[dstIdx] = edge.weight;
       }
       ++xadj[edge.dst+1];
+    }
+
+    ++edgesProcessed;
+    if (progress != nullptr && edgesProcessed % interval == 0) {
+      *progress += increment;
     }
   }
   assert(xadj[m_numVertices] == m_numEdges);
