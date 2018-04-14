@@ -12,7 +12,7 @@
 
 #include "GraphWriterFactory.hpp"
 #include "MetisFile.hpp"
-#include "CSRFile.hpp"
+#include "SNAPFile.hpp"
 #include "MatrixWriterFactory.hpp"
 #include "MatrixGraphWriter.hpp"
 
@@ -36,6 +36,8 @@ std::unique_ptr<IGraphWriter> GraphWriterFactory::make(
   // determine what type of reader to instantiate based on extension
   if (MetisFile::hasExtension(name)) {
     file.reset(new MetisFile(name));
+  } else if (SNAPFile::hasExtension(name)) {
+    file.reset(new SNAPFile(name));
   } else if (useAdapter) {
     // need to wrap it with an adapter
     std::unique_ptr<IMatrixWriter> matPtr(MatrixWriterFactory::make(name, \
