@@ -14,6 +14,7 @@
 #include "CSRFile.hpp"
 #include "MatrixMarketFile.hpp"
 #include "MetisFile.hpp"
+#include "SNAPFile.hpp"
 #include "GraphReaderFactory.hpp"
 #include "GraphMatrixReader.hpp"
 
@@ -40,6 +41,9 @@ std::unique_ptr<IMatrixReader> MatrixReaderFactory::make(
   } else if (MatrixMarketFile::hasExtension(name)) {
     file.reset(new MatrixMarketFile(name));
   } else if (MetisFile::hasExtension(name)) {
+    std::unique_ptr<IGraphReader> graphPtr(GraphReaderFactory::make(name));
+    file.reset(new GraphMatrixReader(graphPtr));
+  } else if (SNAPFile::hasExtension(name)) {
     std::unique_ptr<IGraphReader> graphPtr(GraphReaderFactory::make(name));
     file.reset(new GraphMatrixReader(graphPtr));
   } else {
