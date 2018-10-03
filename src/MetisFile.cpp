@@ -201,13 +201,12 @@ bool MetisFile::getNextVertex(
     return false;
   }
 
-  char * sptr;
   char * eptr = (char*)m_line.data();
 
   // read in vertex weights
   for (dim_t k=0; k<ncon; ++k) {
-    sptr = eptr;
-    val_t val = std::strtod(sptr,&eptr);
+    char * const sptr = eptr;
+    val_t const val = std::strtod(sptr,&eptr);
     if (sptr == eptr) {
       throw BadFileException(std::string("Failed to read vertex weight on " \
             "line ") + std::to_string(m_file.getCurrentLine()));
@@ -220,11 +219,8 @@ bool MetisFile::getNextVertex(
   dim_t degree = 0;
   // read in edges
   while (true) {
-    dim_t dst;
-    val_t wgt;
-
-    sptr = eptr;
-    dst = static_cast<dim_t>(std::strtoull(sptr,&eptr,10))-1;
+    char * sptr = eptr;
+    dim_t const dst = static_cast<dim_t>(std::strtoull(sptr,&eptr,10))-1;
     if (sptr == eptr) {
       break;
     }
@@ -236,17 +232,16 @@ bool MetisFile::getNextVertex(
           std::to_string(m_numVertices));
     }
 
+    edgeDests[degree] = dst;
+
     if (m_hasEdgeWeights) {
       sptr = eptr;
-      wgt = static_cast<val_t>(std::strtod(sptr,&eptr));
+      val_t const wgt = static_cast<val_t>(std::strtod(sptr,&eptr));
       if (sptr == eptr) {
         throw BadFileException(std::string("Could not read edge weight at "
               "line ") + std::to_string(m_file.getCurrentLine()));
       }
-    }
 
-    edgeDests[degree] = dst;
-    if (edgeWeights) {
       if (m_hasEdgeWeights) {
         edgeWeights[degree] = wgt;
       } else {
