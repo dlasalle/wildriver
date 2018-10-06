@@ -61,8 +61,9 @@ static void readTest(
 
   std::unique_ptr<wildriver_ind_t[]> xadj(new wildriver_ind_t[nvtxs+1]);
   std::unique_ptr<wildriver_dim_t[]> adjncy(new wildriver_dim_t[nedges]);
+  std::unique_ptr<wildriver_val_t[]> adjwgt(new wildriver_val_t[nedges]);
 
-  graph.read(xadj.get(),adjncy.get(),nullptr,nullptr,nullptr);
+  graph.read(xadj.get(),adjncy.get(),nullptr,adjwgt.get(),nullptr);
 
   // test xadj
   testEquals(xadj[0],0);
@@ -93,6 +94,11 @@ static void readTest(
 
   testEquals(adjncy[12],3);
   testEquals(adjncy[13],4);
+
+  // test adjwgt
+  for (wildriver_ind_t i = 0; i < nedges; ++i) {
+    testEquals(adjwgt[i], 1);
+  }
 }
 
 
