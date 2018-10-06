@@ -241,12 +241,10 @@ bool MetisFile::getNextVertex(
         throw BadFileException(std::string("Could not read edge weight at "
               "line ") + std::to_string(m_file.getCurrentLine()));
       }
-
-      if (m_hasEdgeWeights) {
-        edgeWeights[degree] = wgt;
-      } else {
-        edgeWeights[degree] = static_cast<val_t>(1);
-      }
+    
+      edgeWeights[degree] = wgt;
+    } else {
+      edgeWeights[degree] = static_cast<val_t>(1);
     }
 
     ++degree;
