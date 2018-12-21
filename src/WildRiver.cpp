@@ -216,6 +216,117 @@ extern "C" void wildriver_close_matrix(
   delete handle;
 }
 
+extern "C" wildriver_graph_handle * wildriver_open_graph(
+    char const * const filename,
+    int const mode)
+{
+  try {
+    std::unique_ptr<wildriver_graph_handle> handle(
+        new wildriver_graph_handle);
+
+    // initialize handle
+    handle->mode = mode;
+    handle->nvtxs = NULL_DIM;
+    handle->nedges = NULL_IND;
+    handle->fd = nullptr;
+
+    bool ewgt_present;
+
+    switch (mode) {
+      case WILDRIVER_IN: {
+          std::unique_ptr<GraphInHandle> ptr(new GraphInHandle(filename));
+          ptr->getInfo(handle->nvtxs, handle->nedges, handle->nvwgt, \
+              ewgt_present);
+          handle->ewgt = static_cast<int>(ewgt_present);
+          handle->fd = reinterpret_cast<void*>(ptr.release());
+        }
+        break;
+      case WILDRIVER_OUT: {
+          std::unique_ptr<GraphOutHandle> ptr(new GraphOutHandle(filename));
+          handle->fd = reinterpret_cast<void*>(ptr.release());
+        }
+        break;
+      default:
+        throw BadParameterException(std::string("Unknown graph mode: ") + \
+            std::to_string(mode));
+    }
+
+    return handle.release();
+  } catch (std::exception const & e) {
+    std::cerr << "ERROR: failed to open graph due to: " << e.what() \
+        << std::endl;
+    return nullptr;
+  }
+}
+
+
+extern "C" int wildriver_load_graph(
+    wildriver_graph_handle * const handle,
+    ind_t * const xadj,
+    dim_t * const adjncy,
+    val_t * const vwgt,
+    val_t * const ewgt,
+    double * progress)
+{
+  if (progress != nullptr) {
+    *progress = 0.0;
+  }
+
+  try {
+    if (handle->mode != WILDRIVER_IN) {
+      throw BadParameterException( \
+          std::string("Cannot load graph in mode: ") + \
+          std::to_string(handle->mode));
+    }
+
+    // check input
+    if (handle->nvtxs == NULL_DIM) {
+      throw BadParameterException("Number of rows has not been set.");
+    }
+    if (handle->nedges == NULL_IND) {
+      throw BadParameterException("Number of edges has not been set.");
+    }
+    if (handle->fd == nullptr) {
+      throw BadParameterException("The file descriptor has not been set.");
+    }
+
+    GraphInHandle * const inHandle = \
+        reinterpret_cast<GraphInHandle*>(handle->fd);
+
+    // allocate graph
+    inHandle->readGraph(xadj, adjncy, vwgt, ewgt, progress);
+  } catch (std::exception const & e) {
+    std::cerr << "ERROR: failed to read graph due to: " << e.what() \
+        << std::endl;
+    return 0;
+  }
+
+  if (progress != nullptr) {
+    *progress = 1.0;
+  }
+
+  return 1;
+}
+
+extern "C" void wildriver_close_graph(
+    wildriver_graph_handle * handle)
+{
+  if (handle->fd != nullptr) {
+    if (handle->mode == WILDRIVER_IN) {
+      delete reinterpret_cast<GraphInHandle*>(handle->fd);
+    } else if (handle->mode == WILDRIVER_OUT) {
+      delete reinterpret_cast<GraphOutHandle*>(handle->fd);
+    } else {
+      std::cerr << "WARNING: unable to determine current mode" << \
+          handle->mode << std::endl;
+    }
+  }
+
+  delete handle;
+}
+
+
+
 
 extern "C" wildriver_vector_handle * wildriver_open_vector(
     char const * const filename,

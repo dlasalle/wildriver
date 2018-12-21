@@ -2,7 +2,7 @@
  * @file wildriver.h
  * @brief Top level C include for WildRiver
  * @author Dominique LaSalle <lasalle@cs.umn.edu>
- * Copyright 2015
+ * Copyright 2015-2018
  * @version 1
  *
  */
@@ -62,6 +62,16 @@ typedef struct {
   wildriver_ind_t nnz;
   void * fd;
 } wildriver_matrix_handle;
+
+
+typedef struct {
+  int mode;
+  wildriver_dim_t nvtxs;
+  wildriver_ind_t nedges;
+  int nvwgt;
+  int ewgt;
+  void * fd;
+} wildriver_graph_handle;
 
 
 typedef struct {
@@ -162,12 +172,57 @@ int wildriver_save_matrix(
 
 
 /**
- * @brief Close an open matix.
+ * @brief Close an open matrix.
  *
  * @param handle The open matrix.
  */
 void wildriver_close_matrix(
     wildriver_matrix_handle * handle);
+
+
+/**
+ * @brief Open a graph for reading. The returned handle must be closed. 
+ *
+ * @param fname The filename/path of the graph file.
+ * @param mode The mode to open the file in (WILDRIVER_IN or WILDRIVER_OUT).
+ *
+ * @return A pointer to the open graph, or nullptr if there was an error.
+ */
+wildriver_graph_handle * wildriver_open_graph(
+    char const * fname,
+    int mode);
+
+
+/**
+ * @brief Load the graph into the given memory locations.
+ *
+ * @param handle The pointer to the open graph.
+ * @param xadj The edge list pointer indicating where each vertex's edges
+ * start in the edge list.
+ * @param adjncy The edge list.
+ * @param vwgt The weight of each vertex.
+ * @param adjwgt The weight of each edge.
+ * @param progress The memory address to write progress updates to (can be
+ * null).
+ *
+ * @return 1 if the graph was read successfully, 0 otherwise.
+ */
+int wildriver_load_graph(
+    wildriver_graph_handle * handle,
+    wildriver_ind_t * xadj,
+    wildriver_dim_t * adjncy,
+    wildriver_val_t * vwgt,
+    wildriver_val_t * adjwgt,
+    double * progress);
+
+
+/**
+ * @brief Close an open graph.
+ *
+ * @param handle The open graph.
+ */
+void wildriver_close_graph(
+    wildriver_graph_handle * handle);
 
 
 /**

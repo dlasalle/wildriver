@@ -1,5 +1,5 @@
 /**
- * @file MatrixInHandle_test.cpp
+ * @file GraphInHandle_test.cpp
  * @brief Test for reading matrices
  * @author Dominique LaSalle <wildriver@domnet.org>
  * Copyright 2015
@@ -14,7 +14,7 @@
 #include <fstream>
 #include <memory>
 
-#include "MatrixInHandle.hpp"
+#include "GraphInHandle.hpp"
 #include "DomTest.hpp"
 
 
@@ -62,77 +62,88 @@ static void writeSparse(
 static void readSparse(
     std::string const & testFile)
 {
-  MatrixInHandle handle(testFile);
+  GraphInHandle handle(testFile);
 
+  wildriver_dim_t nvtxs;
+  wildriver_ind_t nedges;
+  int nvwgt;
+  bool ewgt;
+  handle.getInfo(nvtxs, nedges, nvwgt, ewgt);
 
-  wildriver_dim_t nrows, ncols;
-  wildriver_ind_t nnz;
-  handle.getInfo(nrows,ncols,nnz);
+  testEquals(nvtxs,6);
+  testEquals(nedges,14);
+  testEquals(nvwgt,0);
+  testEquals(ewgt,true);
 
-  testEquals(nrows,6);
-  testEquals(ncols,6);
-  testEquals(nnz,14);
+  std::unique_ptr<wildriver_ind_t[]> xadj(new wildriver_ind_t[nvtxs+1]);
+  std::unique_ptr<wildriver_dim_t[]> adjncy(new wildriver_dim_t[nedges]);
+  std::unique_ptr<wildriver_val_t[]> vwgt(new wildriver_val_t[nvtxs]);
+  std::unique_ptr<wildriver_val_t[]> adjwgt(new wildriver_val_t[nedges]);
 
-  std::unique_ptr<wildriver_ind_t[]> rowptr(new wildriver_ind_t[nrows+1]);
-  std::unique_ptr<wildriver_dim_t[]> rowind(new wildriver_dim_t[nnz]);
-  std::unique_ptr<wildriver_val_t[]> rowval(new wildriver_val_t[nnz]);
+  handle.readGraph(xadj.get(), adjncy.get(), vwgt.get(), adjwgt.get(), nullptr);
 
-  handle.readSparse(rowptr.get(),rowind.get(),rowval.get());
+  // test xadj
+  testEquals(xadj[0],0);
+  testEquals(xadj[1],2);
+  testEquals(xadj[2],4);
+  testEquals(xadj[3],7);
+  testEquals(xadj[4],10);
+  testEquals(xadj[5],12);
+  testEquals(xadj[6],14);
 
-  // test rowptr
-  testEquals(rowptr[0],0);
-  testEquals(rowptr[1],2);
-  testEquals(rowptr[2],4);
-  testEquals(rowptr[3],7);
-  testEquals(rowptr[4],10);
-  testEquals(rowptr[5],12);
-  testEquals(rowptr[6],14);
+  // test vwgt
+  testEquals(vwgt[0],1);
+  testEquals(vwgt[1],1);
+  testEquals(vwgt[2],1);
+  testEquals(vwgt[3],1);
+  testEquals(vwgt[4],1);
+  testEquals(vwgt[5],1);
 
-  // test rowind
-  testEquals(rowind[0],1);
-  testEquals(rowind[1],2);
-  testEquals(rowval[0],1);
-  testEquals(rowval[1],2);
+  // test adjncy
+  testEquals(adjncy[0],1);
+  testEquals(adjncy[1],2);
+  testEquals(adjwgt[0],1);
+  testEquals(adjwgt[1],2);
 
-  testEquals(rowind[2],0);
-  testEquals(rowind[3],2);
-  testEquals(rowval[2],3);
-  testEquals(rowval[3],4);
+  testEquals(adjncy[2],0);
+  testEquals(adjncy[3],2);
+  testEquals(adjwgt[2],3);
+  testEquals(adjwgt[3],4);
 
-  testEquals(rowind[4],0);
-  testEquals(rowind[5],1);
-  testEquals(rowind[6],3);
-  testEquals(rowval[4],5);
-  testEquals(rowval[5],6);
-  testEquals(rowval[6],7);
+  testEquals(adjncy[4],0);
+  testEquals(adjncy[5],1);
+  testEquals(adjncy[6],3);
+  testEquals(adjwgt[4],5);
+  testEquals(adjwgt[5],6);
+  testEquals(adjwgt[6],7);
 
-  testEquals(rowind[7],2);
-  testEquals(rowind[8],4);
-  testEquals(rowind[9],5);
-  testEquals(rowval[7],8);
-  testEquals(rowval[8],9);
-  testEquals(rowval[9],1);
+  testEquals(adjncy[7],2);
+  testEquals(adjncy[8],4);
+  testEquals(adjncy[9],5);
+  testEquals(adjwgt[7],8);
+  testEquals(adjwgt[8],9);
+  testEquals(adjwgt[9],1);
 
-  testEquals(rowind[10],3);
-  testEquals(rowind[11],5);
-  testEquals(rowval[10],2);
-  testEquals(rowval[11],3);
+  testEquals(adjncy[10],3);
+  testEquals(adjncy[11],5);
+  testEquals(adjwgt[10],2);
+  testEquals(adjwgt[11],3);
 
-  testEquals(rowind[12],3);
-  testEquals(rowind[13],4);
-  testEquals(rowval[12],4);
-  testEquals(rowval[13],5);
+  testEquals(adjncy[12],3);
+  testEquals(adjncy[13],4);
+  testEquals(adjwgt[12],4);
+  testEquals(adjwgt[13],5);
 }
 
 
 void Test::run()
 {
   // generate test metis file
-  std::string metisFile("./MatrixInHandle_test.graph");
+  std::string metisFile("./GraphInHandle_test.graph");
   writeMetis(metisFile);
   readSparse(metisFile);
 
-  std::string csrFile("./MatrixInHandle_test.csr");
+  std::string csrFile("./GraphInHandle_test.csr");
   writeSparse(csrFile);
   readSparse(csrFile);
 }

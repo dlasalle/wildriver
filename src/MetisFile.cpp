@@ -325,7 +325,7 @@ MetisFile::MetisFile(
   m_numVertices(NULL_DIM),
   m_numEdges(NULL_IND),
   m_currentVertex(0),
-  m_numVertexWeights(NULL_DIM),
+  m_numVertexWeights(0),
   m_hasEdgeWeights(false),
   m_line(BUFFER_SIZE,'\0'),
   m_file(fname)
