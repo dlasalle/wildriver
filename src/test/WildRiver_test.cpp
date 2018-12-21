@@ -123,6 +123,69 @@ static void readMatrix(
   testEquals(rowval[13],5);
 }
 
+static void readGraph(
+    std::string const & testFile)
+{
+  wildriver_graph_handle * handle = \
+      wildriver_open_graph(testFile.data(),WILDRIVER_IN);
+
+  testTrue(handle != nullptr);
+
+  testEquals(handle->nvtxs,6);
+  testEquals(handle->nedges,14);
+  testEquals(handle->nvwgt,0);
+  testEquals(handle->ewgt,1);
+
+  std::vector<wildriver_ind_t> xadj(handle->nvtxs+1);
+  std::vector<wildriver_dim_t> adjncy(handle->nedges);
+  std::vector<wildriver_val_t> vwgt(handle->nvtxs);
+
+  int rv = wildriver_load_graph(handle, xadj.data(), adjncy.data(), \
+      vwgt.data(), nullptr, nullptr);
+
+  testEquals(rv,1);
+
+  wildriver_close_graph(handle);
+
+  // test xadj
+  testEquals(xadj[0],0);
+  testEquals(xadj[1],2);
+  testEquals(xadj[2],4);
+  testEquals(xadj[3],7);
+  testEquals(xadj[4],10);
+  testEquals(xadj[5],12);
+  testEquals(xadj[6],14);
+
+  // test vwgt
+  testEquals(vwgt[0],1);
+  testEquals(vwgt[1],1);
+  testEquals(vwgt[2],1);
+  testEquals(vwgt[3],1);
+  testEquals(vwgt[4],1);
+  testEquals(vwgt[5],1);
+
+  // test adjncy
+  testEquals(adjncy[0],1);
+  testEquals(adjncy[1],2);
+
+  testEquals(adjncy[2],0);
+  testEquals(adjncy[3],2);
+
+  testEquals(adjncy[4],0);
+  testEquals(adjncy[5],1);
+  testEquals(adjncy[6],3);
+
+  testEquals(adjncy[7],2);
+  testEquals(adjncy[8],4);
+  testEquals(adjncy[9],5);
+
+  testEquals(adjncy[10],3);
+  testEquals(adjncy[11],5);
+
+  testEquals(adjncy[12],3);
+  testEquals(adjncy[13],4);
+}
+
 
 static void writeVector(
     std::string const & testFile)
@@ -353,8 +416,8 @@ void Test::run()
   Test::removeFile(mmFile);
 
   std::string const graphFile("./wildriver_test.graph");
-  writeMatrix(graphFile);
-  readMatrix(graphFile);
+  writeGraph_deprecated(graphFile);
+  readGraph(graphFile);
 
   Test::removeFile(graphFile);
 
